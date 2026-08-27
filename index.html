@@ -350,16 +350,17 @@ function wallRing(x1,y1,x2,y2){
 }
 
 /* --- streets & paths --- */
-rectT(0,48,MW-1,MH-1,T_ROAD,false);
-rectT(0,46,MW-1,47,T_SIDE,false);
+rectT(0,49,MW-1,MH-1,T_ROAD,false);
+rectT(0,47,MW-1,48,T_SIDE,false);
 rectT(4,1,61,4,T_PARK,false);               // parking lot behind the buildings
-rectT(59,2,61,47,T_ROAD,false);             // driveway up the right side (in)
-rectT(1,1,3,47,T_ROAD,false);               // exit driveway: back lot, down the left side of the church
+rectT(59,2,61,48,T_ROAD,false);             // driveway up the right side (in)
+rectT(1,1,3,48,T_ROAD,false);               // exit driveway: back lot, down the left side of the church
 /* (the biergarten + grill areas are just grass; only real walkways are paved) */
-rectT(13,31,14,45,T_PATH,false);            // church walk
+rectT(13,31,14,46,T_PATH,false);            // church walk
 rectT(12,36,43,37,T_PATH,false);            // path along the front, to the kids' walkway
 rectT(28,27,29,36,T_PATH,false);            // corridor door path
-rectT(42,17,43,44,T_PATH,false);            // walkway to the kids' entrance (down to the street)
+rectT(42,17,43,46,T_PATH,false);            // walkway to the kids' entrance (down to the street)
+rectT(44,28,52,28,T_PATH,false);            // branch to the front of the rectory
 
 /* --- church (sanctuary) --- */
 wallRing(4,6,24,30);
@@ -687,7 +688,7 @@ function completeTask(id){
 function tasksDone(){ return TASKS.filter(t=>done[t.id]).length; }
 
 /* ============================================================== DIALOG */
-let state = 'title';   // title | play | dialog | axe | stein | song | card | win
+let state = 'title';   // title | play | dialog | axe | corn | stein | song | card | win
 let dialog = null;     // {name, lines:[], idx, chars}
 function say(name, lines, onDone){
   state = 'dialog';
@@ -720,21 +721,17 @@ function buildWorld(){
     say('SANCTUARY', ["SUNBEAMS DRIFT THROUGH THE STAINED GLASS.",
       "EVEN THE TUBA OUTSIDE GOES QUIET FOR A SECOND.", "...OK IT'S BACK."]);
   });
-  // the pipe organ lives in the loft above the narthex (player walks under it)
-  (function(){ const x=6*TS, y=29.1*TS, w=17*TS;
-    obj(x,y,31*TS,(g)=>{
-      g.fillStyle='#6e5a3a'; g.fillRect(x,y,w,20);
-      g.fillStyle='#7d6845'; g.fillRect(x,y,w,3);
-      g.fillStyle='#54432a'; for(let i=4;i<w-4;i+=8) g.fillRect(x+i,y+1,2,8);
-      const cx=x+w/2;
-      g.fillStyle='#8a744c'; g.fillRect(cx-46,y+4,92,14);
-      g.fillStyle='#c9c2b2';
-      for(let i=0;i<11;i++){ const h=8+(5-Math.abs(i-5))*2; g.fillRect(cx-42+i*8,y+18-h,5,h); }
-      g.fillStyle='#e8d24a'; g.fillRect(cx-46,y+16,92,2);
+  // stairway up to the organ loft (the organ itself is upstairs, out of view)
+  (function(){ const x=5*TS+2, y=27.6*TS;
+    obj(x,y,y+16,(g)=>{
+      g.fillStyle='#6e5a3a'; g.fillRect(x,y,14,20);
+      g.fillStyle='#54432a'; for(let i=0;i<5;i++) g.fillRect(x,y+3+i*4,14,1);
+      g.fillStyle='#8a744c'; g.fillRect(x-2,y,2,20); g.fillRect(x+14,y,2,20);
     });
+    addSolid(x-2,y,18,18);
   })();
-  interactable(15.8,28.6,1.5,'ORGAN LOFT',()=>say('ORGAN LOFT',
-    ["THE PIPE ORGAN IS UP IN THE LOFT","ABOVE THE NARTHEX.","ON SUNDAYS IT MAKES THE FLOOR HUM.","DO NOT PLAY IT. YOU PLAY ONE NOTE","AND SUDDENLY IT'S A WHOLE THING."]));
+  interactable(5.8,28.4,1.5,'ORGAN LOFT',()=>say('ORGAN LOFT',
+    ["STAIRS UP TO THE ORGAN LOFT","ABOVE THE NARTHEX.","THE PIPE ORGAN LIVES UP THERE.","ON SUNDAYS IT MAKES THE FLOOR HUM.","(NO PLAYING IT. ONE NOTE AND","SUDDENLY IT'S A WHOLE THING.)"]));
   // pews
   for (let r=0;r<8;r++){
     const y=(13+r*2)*TS;
@@ -790,7 +787,7 @@ function buildWorld(){
   wcDoor(23.6,27.6,'#8a4f9e','w','women', "WOMEN'S SANCTUARY RESTROOM",
     ["TUCKED OFF THE NARTHEX AT THE BACK OF THE CHURCH.","THE FANCIEST RESTROOM IN NORTH OAKLAND.","IT'S BASICALLY A CHAPEL WITH SINKS."]);
   // narthex welcome table
-  (function(){ const x=6*TS, y=28.2*TS;
+  (function(){ const x=7.2*TS, y=28.2*TS;
     obj(x,y,y+11,(g)=>{
       g.fillStyle='#8a5a30'; g.fillRect(x,y,26,10);
       g.fillStyle='#9a6a3a'; g.fillRect(x,y,26,2);
@@ -799,7 +796,7 @@ function buildWorld(){
     });
     addSolid(x,y,26,10);
   })();
-  interactable(6.8,28.5,1.4,'WELCOME TABLE',()=>say('NARTHEX',
+  interactable(8,28.5,1.4,'WELCOME TABLE',()=>say('NARTHEX',
     ["BULLETINS, NAME TAGS, AND A SIGN-UP SHEET","FOR SOMETHING CALLED 'PIEROGI NIGHT.'","YOU SIGN UP. OBVIOUSLY."]));
 
   /* fellowship hall furnishings */
@@ -868,7 +865,7 @@ function buildWorld(){
     ["LUTHERAN STUDENT FELLOWSHIP.","COLLEGE STUDENTS POWERED BY GENUINE","COMMUNITY. (ALSO THE FREE FOOD.)"]));
 
   /* --- food line: runs north-south along the left side of the rectory --- */
-  bigTent(44,16.6,3,'#f2f0ea','#e2dfd6','GRUB',{bunting:true});
+  bigTent(44,17.4,3,'#f2f0ea','#e2dfd6','GRUB',{bunting:true});
   (function(){ const x=44*TS, y=19.5*TS, h=64;  // vertical serving counter
     obj(x,y,y+h+6,(g)=>{
       g.fillStyle='rgba(0,0,0,0.12)'; g.fillRect(x+2,y+h,12,5);
@@ -926,6 +923,9 @@ function buildWorld(){
   interactable(16.5,39.5,1.8,'AXE THROW',()=>{
     say('AXEL', ["AXE THROWING AT A CHURCH FESTIVAL?","IT'S CALLED FAITH, BUDDY.","STEP UP! PRESS THE BUTTON WHEN THE MARKER","IS DEAD CENTER!"], ()=>{ startAxe(); });
   });
+  interactable(16.4,35.4,1.5,'TARGET',()=>{
+    say('AXEL', ["HEY! YOU THROW FROM THE LINE!","...OK, FINE. STEP RIGHT UP!"], ()=>{ startAxe(); });
+  });
 
   /* --- info tent + QR sign + exit --- */
   bigTent(5,37,4,'#3b6ea8','#f4e9c8','INFO');
@@ -955,10 +955,9 @@ function buildWorld(){
   })();
   interactable(2.6,44.6,1.8,'EXIT',()=>say('EXIT DRIVEWAY',["THE EXIT DRIVEWAY. ONE WAY, DOWNHILL,","BACK TO THE REAL WORLD.","THE PRETZELS WILL MISS YOU.","(THE FEELING IS MUTUAL.)"]));
 
-  /* --- biergarten: big white canopy tents with lanterns, like the real thing --- */
-  bigTent(37,29,10,'#f2f0ea','#e2dfd6','BIERGARTEN',{bunting:true,lanterns:true});
-  bigTent(48,29,10,'#f2f0ea','#e2dfd6','PROST!',{bunting:true,lanterns:true});
-  // HGB drink table under tent 2 (teal cloth, keg cooler, steins)
+  /* --- biergarten: one big white canopy tent with lanterns, like the real thing --- */
+  bigTent(48,29,10,'#f2f0ea','#e2dfd6','BIERGARTEN',{bunting:true,lanterns:true});
+  // HGB drink table under the tent (teal cloth, keg cooler, steins)
   const bc = counterObj(50,33,6,'#2b7a78');
   (function(){ const x=50.5*TS, y=32.4*TS;
     obj(x,y,y+40,(g)=>{
@@ -987,7 +986,7 @@ function buildWorld(){
     });
     addSolid(x,y+2,22,12);
   })();
-  // extra tables under the main tent
+  // open-air tables on the lawn
   picnicTable(39,33.6); picnicTable(44.2,33.6);
   // rows of folding chairs facing the band (like the photo)
   (function(){
@@ -1093,8 +1092,7 @@ function buildWorld(){
     ["THIS IS THE RECTORY. THE PASTOR REALLY LIVES HERE.","YES, THE BRATWURST SMOKE REACHES THE KITCHEN.","NO, YOU CANNOT SEE THE FRIDGE."]));
   // picnic tables
   picnicTable(44.2,38); picnicTable(48.5,38); picnicTable(53,38);
-  picnicTable(44.2,41.5); picnicTable(48.5,41.5); picnicTable(53,41.5);
-  picnicTable(36.5,23);   // lawn table near the food line
+  picnicTable(44.2,41.5); picnicTable(53,41.5);
   interactable(49.5,39,1.4,'TABLE',()=>say('EDNA',["I'VE BEEN COMING SINCE 1962.","THE PRETZELS HAVE ONLY GOTTEN BIGGER.","SIT. EAT. YOU'RE TOO SKINNY."]));
   // string lights over the plaza
   const p1 = stringPole(36,35), p2 = stringPole(46,35), p3 = stringPole(57,35);
@@ -1153,22 +1151,21 @@ function buildWorld(){
     });
     addSolid(x,y+1,w,8);
   }
-  stoneWall(4,44.9,8); stoneWall(17,44.9,19);
+  stoneWall(4,46.3,8); stoneWall(17,46.3,19); stoneWall(36,46.3,6); stoneWall(44,46.3,15);
 
-  /* --- the hand-painted WELCOME STUDENTS! sign --- */
-  (function(){ const x=33.2*TS, y=43.2*TS;
-    obj(x,y,y+14,(g)=>{
-      g.fillStyle='#6b4a2b'; g.fillRect(x+6,y+2,3,12); g.fillRect(x+46,y+2,3,12);
-      g.fillStyle='#2b5f9e'; g.fillRect(x,y-18,56,11);
-      g.fillStyle='#b03a3a'; g.fillRect(x,y-7,56,11);
-      g.fillStyle='#f4e9c8'; g.fillRect(x+1,y-18,54,1); g.fillRect(x+1,y+3,54,1);
-      drawText('WELCOME', x+28, y-15, 1, '#f4e9c8','center');
-      drawText('STUDENTS!', x+28, y-5, 1, '#f4e9c8','center');
+  /* --- the big street tree in front of the rectory --- */
+  (function(){ const x=48*TS, y=41.2*TS;
+    obj(x,y,y+66,(g)=>{
+      g.fillStyle='rgba(0,0,0,0.15)'; g.fillRect(x+12,y+58,40,8);
+      g.fillStyle='#b3701e'; g.fillRect(x+26,y+40,12,24);
+      g.fillStyle='#8a5416'; g.fillRect(x+26,y+40,4,24);
+      g.fillStyle='#4e7a42'; g.fillRect(x+6,y+10,52,34);
+      g.fillStyle='#5d8f4e'; g.fillRect(x+12,y+2,40,34); g.fillRect(x+2,y+16,60,22);
+      g.fillStyle='#6fa35e'; g.fillRect(x+18,y+6,22,12); g.fillRect(x+8,y+20,14,10);
+      g.fillStyle='#82b56e'; g.fillRect(x+22,y+8,10,6);
     });
-    addSolid(x+5,y+8,45,6);
+    addSolid(x+24,y+56,16,8);
   })();
-  interactable(35,43.5,1.6,'SIGN',()=>say('WELCOME STUDENTS!',
-    ["A HAND-PAINTED SIGN AIMED AT PITT AND CMU.","IT SAYS 'FREE FOOD' IN COLLEGE STUDENT.","IT NEVER MISSES."]));
 
   /* --- corn stalks flanking the doors (fall decor, like the photos) --- */
   function cornStalk(tx,ty){
@@ -1249,8 +1246,9 @@ function buildWorld(){
       g.fillStyle='#e8d24a'; g.fillRect(x+4,y+8,3,3);
     });
   })();
-  interactable(6.6,33.2,1.9,'CORNHOLE',()=>say('CORNHOLE',
-    ["CORNHOLE: THE OFFICIAL SPORT","OF WAITING FOR YOUR BRATS.","REIGNING CHAMPION: A GRANDMOTHER NAMED RUTH."]));
+  interactable(6.6,33.2,1.9,'CORNHOLE',()=>{
+    say('RUTH', ["CORNHOLE! I'M RUTH. REIGNING CHAMPION.","THE OFFICIAL SPORT OF WAITING FOR BRATS.","STOP THE MARKER DEAD CENTER","TO SINK THE BAG!"], ()=>{ startCorn(); });
+  });
 
   /* --- lamp posts on the lawn --- */
   function lampPost(tx,ty){
@@ -1300,7 +1298,7 @@ function buildWorld(){
   })();
 
   /* ------------------------------------------------------------- NPCs */
-  npc(19,31.5,{name:'PASTOR JANSSEN', hat:'collar', shirt:'#2b2b33', pants:'#1e1e26', hair:'#9a9a9a', wander:24,
+  npc(14.2,33.8,{name:'PASTOR JANSSEN', hat:'collar', shirt:'#2b2b33', pants:'#1e1e26', hair:'#9a9a9a', wander:18,
     lines:["WELCOME, WELCOME! GOD'S WORK, FUN TIMES.","TRY THE PRETZELS. THEOLOGICALLY EXCELLENT.","WE'VE BEEN HERE SINCE 1837. THE BRATS ARE FRESHER."]});
   npc(45.4,20.3,{name:'HEIDI', dress:'#2f7d46', hat:'braid', hair:'#8a5a30', still:true});
   npc(52.5,32.4,{name:'OTTO', hat:'feather', shirt:'#f5f0e6', pants:'#7a4f2a', straps:true, still:true});
@@ -1308,6 +1306,7 @@ function buildWorld(){
     apron:true});
   npc(19,39.5,{name:'AXEL', shirt:'#b03a3a', pants:'#3a3a44', hair:'#c9542f', wander:8,
     lines:["RULE ONE: THROW THE AXE AT THE TARGET.","RULE TWO: ONLY AT THE TARGET.","THERE ARE NO OTHER RULES."]});
+  npc(7.5,31.8,{name:'RUTH', dress:'#8a4f9e', hat:'braid', hair:'#c9c2b2', still:true});
   npc(49.5,11,{name:'DOODLES', hat:'puff', shirt:'#c17ad4', pants:'#e8d24a', nose:'#d94f4f', still:true});
   npc(6.8,39.4,{name:'MARGE', dress:'#2b7a78', hair:'#9a9a9a', hat:'braid', still:true});
   npc(46,40.5,{name:'CHUCK', shirt:'#241d16', pants:'#d9b23a', hat:'cap', hatColor:'#241d16', wander:30,
@@ -1363,6 +1362,8 @@ const smoke = [];
 /* ============================================================ MINIGAMES */
 let axeState = null, axeStuck = false;
 function startAxe(){ state='axe'; axeState = {t:0, ph:rr(0,6), result:null, resT:0, axeFly:0}; }
+let cornState = null;
+function startCorn(){ state='corn'; cornState = {t:0, ph:rr(0,6), result:null, resT:0}; }
 let steinState = null;
 function startStein(){ state='stein'; steinState = {meter:30, time:6.0, doneFlag:null}; }
 let songState = null;
@@ -1403,6 +1404,7 @@ function update(dt){
   }
   if (state==='card'){ if (interactPressed){ interactPressed=false; state='play'; } return; }
   if (state==='axe'){ updateAxe(dt); return; }
+  if (state==='corn'){ updateCorn(dt); return; }
   if (state==='stein'){ updateStein(dt); return; }
   if (state==='song'){ updateSong(dt); return; }
   if (state==='win'){
@@ -1540,6 +1542,31 @@ function updateAxe(dt){
     }
   }
 }
+function updateCorn(dt){
+  const c = cornState;
+  if (c.result===null){
+    c.t += dt;
+    if (interactPressed){
+      interactPressed=false;
+      const v = Math.sin(c.t*2.9 + c.ph);
+      c.hit = v; c.result = Math.abs(v)<0.16 ? 'hole' : (Math.abs(v)<0.55?'board':'grass');
+      c.resT = 0; sfx(c.result==='hole'?'tada':'thunk');
+    }
+  } else {
+    c.resT += dt;
+    if (c.resT>0.7 && interactPressed){
+      interactPressed=false;
+      if (c.result==='hole'){
+        state='play'; cornState=null;
+        say('RUTH',["IN THE HOLE! CLUNK.","RUTH RAISES ONE EYEBROW.","THAT IS THE HIGHEST HONOR SHE GIVES."]);
+      } else if (c.result==='board'){
+        say('RUTH',["ON THE BOARD. IT SLID... AND STAYED.","'NOT BAD, SWEETIE.' - RUTH","AGAIN!"], ()=>startCorn());
+      } else {
+        say('RUTH',["STRAIGHT INTO THE GRASS.","RUTH PATS THE BENCH BESIDE HER.","'WE ALL START SOMEWHERE.' AGAIN!"], ()=>startCorn());
+      }
+    }
+  }
+}
 function updateStein(dt){
   const s = steinState;
   if (s.doneFlag===null){
@@ -1622,6 +1649,7 @@ function draw(){
   if (state==='dialog') drawDialog();
   if (state==='card') drawCard();
   if (state==='axe') drawAxe();
+  if (state==='corn') drawCorn();
   if (state==='stein') drawStein();
   if (state==='song') drawSong();
   if (state==='win') drawWin();
@@ -1718,6 +1746,32 @@ function drawAxe(){
     const msg = a.result==='bull'?'BULLSEYE!!':(a.result==='close'?'SO CLOSE!':'THE LAWN HAS BEEN SLAIN');
     drawText(msg, VW/2, 200, 1, a.result==='bull'?'#7bde8e':'#e8d24a', 'center');
     if (a.resT>0.7) drawText(isTouch?'TAP A':'PRESS E', VW/2, 216, 1, '#8fa3bf','center');
+  } else {
+    drawText(isTouch?'TAP A AT DEAD CENTER!':'PRESS E AT DEAD CENTER!', VW/2, 200, 1, '#f4e9c8','center');
+  }
+}
+
+function drawCorn(){
+  panel(70, 40, VW-140, 200, 'CORNHOLE');
+  const c = cornState;
+  const bx = VW/2, by = 108;
+  // the board, seen from the throwing end
+  CTX.fillStyle='#c99548'; CTX.fillRect(bx-34, by-26, 68, 52);
+  CTX.fillStyle='#b3812c'; CTX.fillRect(bx-34, by+22, 68, 4);
+  CTX.fillStyle='#241d16'; CTX.fillRect(bx-8, by-18, 16, 12);
+  const v = c.result===null ? Math.sin(c.t*2.9+c.ph) : c.hit;
+  // marker bar
+  CTX.fillStyle='#0f1621'; CTX.fillRect(bx-70, 176, 140, 14);
+  CTX.fillStyle='#57b060'; CTX.fillRect(bx-12, 176, 24, 14);
+  CTX.fillStyle='#e8d24a'; CTX.fillRect(bx + v*62 - 2, 174, 4, 18);
+  if (c.result!==null){
+    const px = bx + v*40;
+    const py = c.result==='hole' ? by-12 : (c.result==='board' ? by+8 : by+42);
+    CTX.fillStyle='#e8d24a'; CTX.fillRect(px-4, py-4, 9, 9);
+    CTX.fillStyle='#c9a43a'; CTX.fillRect(px-4, py+2, 9, 3);
+    const msg = c.result==='hole'?'IN THE HOLE!!':(c.result==='board'?'ON THE BOARD!':'INTO THE GRASS');
+    drawText(msg, VW/2, 200, 1, c.result==='hole'?'#7bde8e':'#e8d24a', 'center');
+    if (c.resT>0.7) drawText(isTouch?'TAP A':'PRESS E', VW/2, 216, 1, '#8fa3bf','center');
   } else {
     drawText(isTouch?'TAP A AT DEAD CENTER!':'PRESS E AT DEAD CENTER!', VW/2, 200, 1, '#f4e9c8','center');
   }
@@ -1931,6 +1985,7 @@ buildWorld();
 window.__tp = (tx,ty)=>{ player.x=tx*TS; player.y=ty*TS; };
 window.__state = ()=>state;
 window.__axe = ()=> axeState && axeState.result===null ? Math.sin(axeState.t*3.1+axeState.ph) : null;
+window.__corn = ()=> cornState && cornState.result===null ? Math.sin(cornState.t*2.9+cornState.ph) : null;
 window.__dog = ()=>({x:dog.x, y:dog.y});
 window.__tasks = ()=>TASKS.map(t=>t.id+':'+done[t.id]).join(',');
 function frame(t){
