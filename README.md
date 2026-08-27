@@ -5,10 +5,12 @@ A tiny 2D pixel-art exploration game of the **First Trinity Oktoberfest**
 
 The grounds are modeled on the official FOCUS Oktoberfest map: the Sanctuary
 (open for visits, with the Women's Sanctuary Restroom off the narthex), the
-fellowship hall, the parish hall with the Kid's Center + booths (enter from the
-main path past the food and tents), the gazebos, the axe throw, the food tent,
-the rectory with its back-patio grill, the back parking lot up the driveway,
-and the Biergarten — where the Pittsburgh PolkaMeisters are playing.
+fellowship hall, the parish hall with the Kid's Center + booths and the PLDM
+(Pittsburgh Lutheran Deaf Ministries) table, the PALM and LSF ministry tents,
+the axe throw, cornhole on the lawn, the food line by the grill patio behind
+the rectory, the back parking lot up the entrance driveway (exit driveway on
+the other side), and the Biergarten — where the Pittsburgh PolkaMeisters play
+at the front of the main tent, and requesting a song really changes the music.
 
 ## Play
 
