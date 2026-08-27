@@ -92,3 +92,12 @@ touch controls on phones/tablets.
   so backing out of a minigame doesn't restart the whole pitch — then fall back
   to chatter. Scripted moments (quest beats, minigame results, scenery you
   examine) still play as written with `say()`.
+- **Every utterance has to stand on its own**, because any of them can be the
+  first thing you hear. A line that answers or continues another one belongs in
+  the same entry, not in a separate one — Chuck's "DON'T TELL ANYONE I SAID
+  DAT" is stapled to the Stillers line it answers, and Mike says "I PACE MYSELF
+  ON THE BRATS" rather than leaving "THE PACE IS FOUR" to dangle.
+- People are drawn by `drawPerson()` at 12px with a two-frame walk: feet apart
+  on one frame, together with the body lifted a pixel on the other. The stride
+  has to live in the two rows below the body block, which paints over
+  everything above `y+12`.

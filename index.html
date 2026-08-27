@@ -646,13 +646,18 @@ function drawPerson(g, px, py, dir, frame, cfg){
   g.fillStyle='rgba(0,0,0,0.18)'; g.fillRect(x+2,y+14,8,2);          // shadow
   const skin = cfg.skin||'#f0c090', hair = cfg.hair||'#6b4a2b';
   const legs = cfg.legs||'#7a4f2a', shoe = '#3a2a1a';
-  // legs
-  if (frame===1){ g.fillStyle=legs; g.fillRect(x+3,y+11,2,3); g.fillRect(x+7,y+12,2,2);
-    g.fillStyle=shoe; g.fillRect(x+3,y+14,2,1); g.fillRect(x+7,y+14,2,1); }
-  else if (frame===2){ g.fillStyle=legs; g.fillRect(x+3,y+12,2,2); g.fillRect(x+7,y+11,2,3);
-    g.fillStyle=shoe; g.fillRect(x+3,y+14,2,1); g.fillRect(x+7,y+14,2,1); }
-  else { g.fillStyle=legs; g.fillRect(x+3,y+11,2,3); g.fillRect(x+7,y+11,2,3);
-    g.fillStyle=shoe; g.fillRect(x+3,y+14,2,1); g.fillRect(x+7,y+14,2,1); }
+  /* Walk cycle. The body block covers everything above y+12, so a stride has
+     to read in the two rows below it - the old one only moved a pixel at the
+     top of a leg, which the body painted straight over, so all three frames
+     came out identical. Frame 1 plants the feet apart, frame 2 brings them
+     together and lifts the body a pixel as it passes; the legs stretch to
+     meet the raised body so nothing floats. Feet and shadow stay planted. */
+  const apart = (frame===1), pass = (frame===2), bob = pass ? -1 : 0;
+  const lx = apart ? x+2 : x+3;      // pass keeps the normal stance and rises;
+  const rx = apart ? x+8 : x+7;      // bringing the legs closer merges them
+  g.fillStyle=legs; g.fillRect(lx,y+12+bob,2,2-bob); g.fillRect(rx,y+12+bob,2,2-bob);
+  g.fillStyle=shoe; g.fillRect(lx,y+14,2,1); g.fillRect(rx,y+14,2,1);
+  g.save(); if (bob) g.translate(0,bob);   // everything above the knees bobs
   // body
   if (cfg.dress){
     g.fillStyle=cfg.dress; g.fillRect(x+3,y+7,6,2); g.fillRect(x+2,y+9,8,3);
@@ -694,6 +699,7 @@ function drawPerson(g, px, py, dir, frame, cfg){
     g.fillStyle=hair; g.fillRect(x+2,y+2,1,4); g.fillRect(x+9,y+2,1,4);
     g.fillStyle='#d94f4f'; g.fillRect(x+2,y+6,1,1); g.fillRect(x+9,y+6,1,1);
   }
+  g.restore();
 }
 function drawDog(g, px, py, flip, frame){
   const x=Math.round(px), y=Math.round(py);
@@ -971,7 +977,7 @@ function buildWorld(){
   }
   interactable(38,8.5,1.5,'CRAFT BOOTH',()=>chatter('CAITLYN',["HI, I'M CAITLYN! WELCOME TO CRAFTS!","GLITTER. GOOGLY EYES. POPSICLE STICKS. THE HOLY TRINITY OF CRAFTS.","EVERY YEAR SOMEONE GLUES A GOOGLY EYE TO THE PASTOR. EVERY YEAR HE PRETENDS NOT TO NOTICE."]));
   interactable(42,8.5,1.5,'PLDM TABLE',()=>chatter('DEBRA',["HI! I'M DEBRA, WITH PITTSBURGH LUTHERAN DEAF MINISTRIES.","WANT TO LEARN THE SIGN FOR 'PRETZEL'? ...THERE YOU GO. YOUR DAY JUST IMPROVED.","DEAF AND HEARING FOLKS AT THE SAME TABLE, EATING THE SAME PRETZELS. THAT'S THE WHOLE IDEA."]));
-  interactable(46,8.5,1.5,'GAMES BOOTH',()=>chatter('RING TOSS',["THE RINGS ARE PRETZEL-SHAPED.","NOBODY HAS EVER WON. IT'S PERFECT.","THE GRAND PRIZE IS A DIFFERENT, SMALLER PRETZEL."]));
+  interactable(46,8.5,1.5,'GAMES BOOTH',()=>chatter('RING TOSS',["THE RINGS ARE PRETZEL-SHAPED.","NOBODY HAS EVER WON. IT'S PERFECT.","THE GRAND PRIZE IS A PRETZEL. SO IS THE CONSOLATION PRIZE."]));
   // balloon stand
   (function(){ const x=48*TS, y=10*TS;
     obj(x,y,y+18,(g)=>{
@@ -1062,8 +1068,8 @@ function buildWorld(){
       say('ALEX', ["AXE THROWING AT A CHURCH FESTIVAL?","IT'S CALLED FAITH, BUDDY.","STEP UP! PRESS THE BUTTON WHEN THE MARKER IS DEAD CENTER!"], ()=>{ startAxe(); });
     } else chatter('ALEX', [
       "BACK FOR ANOTHER? STEP UP TO THE LINE.",
-      "THE HAY BALE HAS FORGIVEN YOU. PROBABLY.",
-      "SAME RULES AS BEFORE. THERE'S ONLY THE ONE.",
+      "THE HAY BALE HAS SEEN WORSE. MUCH WORSE.",
+      "AIM FOR DEAD CENTER. THAT IS THE WHOLE TECHNIQUE.",
     ], 'ALEX@AXE', ()=>{ startAxe(); });
   });
   interactable(16.4,35.4,1.5,'TARGET',()=>{
@@ -1256,7 +1262,7 @@ function buildWorld(){
   // picnic tables (pulled up close to the tent so the big tree stands clear)
   picnicTable(44.2,36); picnicTable(48.5,36); picnicTable(53,36);
   picnicTable(44.2,39.5); picnicTable(53,39.5);
-  interactable(49.5,37.6,1.4,'TABLE',()=>chatter('EDNA',["I'VE BEEN COMING SINCE 1962.","THE PRETZELS HAVE ONLY GOTTEN BIGGER.","SIT. EAT. YOU'RE TOO SKINNY."]));
+  interactable(49.5,37.6,1.4,'TABLE',()=>chatter('EDNA',["I'VE BEEN COMING SINCE 1962.","IN SIXTY YEARS THE PRETZELS HAVE ONLY GOTTEN BIGGER.","SIT. EAT. YOU'RE TOO SKINNY."]));
   // string lights over the plaza
   const p1 = stringPole(36,35), p2 = stringPole(46,35), p3 = stringPole(57,35);
   const p4 = stringPole(36,44), p5 = stringPole(46,44), p6 = stringPole(57,44);
@@ -1484,15 +1490,17 @@ function buildWorld(){
   npc(49.5,11,{name:'DOODLES', hat:'puff', shirt:'#c17ad4', pants:'#e8d24a', nose:'#d94f4f', still:true});
   npc(6.8,39.4,{name:'TERRY', shirt:'#2b7a78', pants:'#3a3a44', hair:'#6b4a2b', hat:'cap', hatColor:'#2b7a78', still:true});
   npc(49.5,34.3,{name:'MIKE', shirt:'#3b6ea8', pants:'#3a3a44', hair:'#6b4a2b', wander:10,
-    says:["MIKE. LIFELONG MEMBER. FIRST IN LINE FOR BRATS EVERY YEAR.","I PACE MYSELF. THE PACE IS FOUR.","I SURE HOPE THEY GOT LIABILITY INSURANCE FOR THIS!"]});
+    says:["MIKE. LIFELONG MEMBER. FIRST IN LINE FOR BRATS EVERY YEAR.","I PACE MYSELF ON THE BRATS. THE PACE IS FOUR.","I SURE HOPE THEY GOT LIABILITY INSURANCE FOR THIS!"]});
   npc(54.5,34.5,{name:'NORM', shirt:'#57b060', pants:'#241d16', hair:'#9a9a9a', wander:10,
-    says:["NORM. I CAME FOR THE POLKA.","I STAYED BECAUSE I SAT DOWN AND THESE CHAIRS ARE PRETTY GOOD.","SOMEONE BROUGHT ME A PRETZEL WITHOUT ME EVEN ASKING. BEST CHURCH IN PITTSBURGH."]});
+    says:["NORM. I CAME FOR THE POLKA.","I STAYED BECAUSE I SAT DOWN. THESE CHAIRS ARE BETTER THAN THEY LOOK.","SOMEONE BROUGHT ME A PRETZEL WITHOUT ME EVEN ASKING. BEST CHURCH IN PITTSBURGH."]});
   npc(35.2,29,{name:'BRANDON', shirt:'#f5f0e6', pants:'#7a4f2a', hair:'#3a2a1a', wander:10,
     says:["BRANDON. PALM - PITTSBURGH AREA LUTHERAN MINISTRIES. CLIPBOARD GUY.","SIGN UP FOR SOMETHING. ANYTHING. THAT'S HOW THEY GET YOU. I SIGNED UP IN 2009.","IS IT JUST ME, OR DOES EVERYTHING LOOK A LITTLE... PIXELATED TODAY?"]});
   npc(35.2,33.4,{name:'PASTOR ANDRAE', hat:'collar', shirt:'#2b2b33', pants:'#1e1e26', hair:'#241d16', wander:10,
     says:["PASTOR ANDRAE. I'M HERE WITH LSF - LUTHERAN STUDENT FELLOWSHIP.","COLLEGE STUDENTS RUN ON FREE FOOD AND GENUINE COMMUNITY. IN THAT ORDER.","PITT AND CMU ARE BOTH WALKING DISTANCE. SO IS THE FREE FOOD. YOU DO THE MATH."]});
   npc(46,40.5,{name:'CHUCK', shirt:'#241d16', pants:'#d9b23a', hat:'cap', hatColor:'#241d16', wander:30,
-    says:["THIS IS BETTER THAN A STILLERS GAME.","DON'T TELL ANYONE I SAID DAT, YINZ.","I PUT KRAUT ON MY PRETZEL. I CONTAIN MULTITUDES."]});
+    says:[["THIS IS BETTER THAN A STILLERS GAME.","DON'T TELL ANYONE I SAID DAT, YINZ."],
+      "I PUT KRAUT ON MY PRETZEL. I CONTAIN MULTITUDES.",
+      "I PARKED IN THE BACK LOT. TOOK ME THREE YEARS TO FIND IT. WORTH IT."]});
   npc(40,13,{name:'PIPER', shirt:'#e8d24a', pants:'#4f7ed9', hair:'#3a2a1a', wander:40, fast:true,
     says:["I ATE FOUR PRETZELS AND I FEEL INVINCIBLE.","THE BALLOON GUY MADE ME A DOG! HIS NAME IS MR. SQUEAKS.","THE PLDM TABLE TAUGHT ME TO SIGN 'MORE PRETZELS PLEASE.' IT WORKS EVERY TIME."]});
   npc(52,36.5,{name:'GRETA', dress:'#b23a48', hat:'braid', hair:'#6b4a2b', wander:16,
@@ -1610,7 +1618,7 @@ function update(dt){
     if (!collides(nx, player.y)) player.x = nx;
     if (!collides(player.x, ny)) player.y = ny;
     player.dir = dy<0?'up':(dy>0?'down':(dx<0?'left':'right'));
-    player.animT += dt*8;
+    player.animT += dt*6;
     player.frame = 1 + (((player.animT)|0)%2);
   } else { player.frame = 0; player.animT = 0; }
 
@@ -1672,7 +1680,7 @@ function update(dt){
       if (distH < n.wander*2 && !collides(nx,n.y)) n.x=nx; else n.vx*=-1;
       if (distV < n.wander && !collides(n.x,ny)) n.y=ny; else n.vy*=-1;
       n.dir = Math.abs(n.vx)>Math.abs(n.vy) ? (n.vx<0?'left':'right') : (n.vy<0?'up':'down');
-      n.animT += dt*4; n.frame = 1+((n.animT|0)%2);
+      n.animT += dt*(n.cfg.fast?5:3); n.frame = 1+((n.animT|0)%2);
     } else n.frame = 0;
   }
 
