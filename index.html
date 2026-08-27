@@ -358,9 +358,8 @@ rectT(1,1,3,48,T_ROAD,false);               // exit driveway: back lot, down the
 /* (the biergarten + grill areas are just grass; only real walkways are paved) */
 rectT(13,31,14,46,T_PATH,false);            // church walk
 rectT(12,36,43,37,T_PATH,false);            // path along the front, to the kids' walkway
-rectT(28,27,29,36,T_PATH,false);            // corridor door path
-rectT(42,17,43,46,T_PATH,false);            // walkway to the kids' entrance (down to the street)
-rectT(44,28,52,28,T_PATH,false);            // branch to the front of the rectory
+rectT(28,27,29,46,T_PATH,false);            // the one walkway: street up into the hallway door
+rectT(30,28,52,28,T_PATH,false);            // branch along the building fronts to the rectory
 
 /* --- church (sanctuary) --- */
 wallRing(4,6,24,30);
@@ -381,7 +380,7 @@ setT(33,12,T_PINK,false); setT(33,13,T_PINK,false);   // east door to kid center
 wallRing(34,6,52,16);
 rectT(35,7,51,15,T_KID,false);
 setT(34,12,T_KID,false); setT(34,13,T_KID,false);     // west door
-setT(42,16,T_KID,false); setT(43,16,T_KID,false);     // south door
+/* (no south door - the kid's center is entered from the side, through the hallway) */
 
 /* flower beds near church steps */
 /* big bushes in mulch beds flank the front steps (drawn as objects) */
@@ -668,7 +667,7 @@ const TASKS = [
  {id:'brat',    icon:'BRAT',     label:"GET A BRAT FROM THE GRILL"},
  {id:'stein',   icon:'STEIN',    label:"WIN THE STEIN HOLD"},
  {id:'axe',     icon:'AXE',      label:"HIT A BULLSEYE (AXE THROW)"},
- {id:'corn',    icon:'BAG',      label:"SINK A CORNHOLE BAG (BEAT RUTH)"},
+ {id:'corn',    icon:'BAG',      label:"SINK A CORNHOLE BAG (BEAT KRISTI)"},
  {id:'balloon', icon:'BALLOON',  label:"GET A BALLOON DACHSHUND"},
  {id:'song',    icon:'SONG',     label:"REQUEST A POLKAMEISTERS SONG"},
  {id:'altar',   icon:'CHURCH',   label:"VISIT THE SANCTUARY ALTAR"},
@@ -847,8 +846,8 @@ function buildWorld(){
     addSolid(x,y+8,30,10);
   })();
 
-  /* sign over the hall's main entrance (off the path past the food + tents) */
-  (function(){ const cx=43*TS, y=16*TS+2;
+  /* sign over the hallway door (the way in to the kid's center, from the side) */
+  (function(){ const cx=29*TS, y=26*TS+2;
     obj(cx,y,y+12,(g)=>{
       const label="KID'S CENTER", w=textW(label,1)+10;
       g.fillStyle='#f4e9c8'; g.fillRect(cx-w/2, y, w, 11);
@@ -894,9 +893,9 @@ function buildWorld(){
   interactable(43.9,21.3,1.8,'FOOD COUNTER',()=>{
     if (!done.pretzel){
       completeTask('pretzel');
-      say('HEIDI', ["ONE GIANT PRETZEL! STILL WARM.","THE SECRET INGREDIENT IS LUTHERAN HOSPITALITY.","...AND BUTTER. MOSTLY BUTTER."]);
+      say('MIRKA', ["ONE GIANT PRETZEL! STILL WARM.","THE SECRET INGREDIENT IS LUTHERAN HOSPITALITY.","...AND BUTTER. MOSTLY BUTTER."]);
     } else {
-      say('HEIDI', ["POTATO SALAD? SAUERKRAUT? STRUDEL?","YES."]);
+      say('MIRKA', ["POTATO SALAD? SAUERKRAUT? STRUDEL?","YES."]);
     }
   });
 
@@ -922,17 +921,17 @@ function buildWorld(){
     }
   })();
   interactable(16.5,39.5,1.8,'AXE THROW',()=>{
-    say('AXEL', ["AXE THROWING AT A CHURCH FESTIVAL?","IT'S CALLED FAITH, BUDDY.","STEP UP! PRESS THE BUTTON WHEN THE MARKER","IS DEAD CENTER!"], ()=>{ startAxe(); });
+    say('ALEX', ["AXE THROWING AT A CHURCH FESTIVAL?","IT'S CALLED FAITH, BUDDY.","STEP UP! PRESS THE BUTTON WHEN THE MARKER","IS DEAD CENTER!"], ()=>{ startAxe(); });
   });
   interactable(16.4,35.4,1.5,'TARGET',()=>{
-    say('AXEL', ["HEY! YOU THROW FROM THE LINE!","...OK, FINE. STEP RIGHT UP!"], ()=>{ startAxe(); });
+    say('ALEX', ["HEY! YOU THROW FROM THE LINE!","...OK, FINE. STEP RIGHT UP!"], ()=>{ startAxe(); });
   });
 
   /* --- info tent + QR sign + exit --- */
   bigTent(5,37,4,'#3b6ea8','#f4e9c8','INFO');
   counterObj(5,40,4,'#f4e9c8');
   interactable(6.8,40.4,1.7,'INFO TENT',()=>{
-    say('MARGE (FOCUS)', ["WILLKOMMEN TO FIRST TRINITY OKTOBERFEST!","FOOD! MUSIC! AXE THROWING! THREE LEGENDARY RESTROOMS!",
+    say('TERRY (FOCUS)', ["WILLKOMMEN TO FIRST TRINITY OKTOBERFEST!","FOOD! MUSIC! AXE THROWING! THREE LEGENDARY RESTROOMS!",
       "GRAB A FESTKARTE - THAT'S YOUR QUEST LIST.","PRESS TAB (OR THE QUESTS BUTTON) ANY TIME!"]);
   });
   (function(){ const x=10.2*TS, y=39*TS;  // QR sign
@@ -1152,7 +1151,7 @@ function buildWorld(){
     });
     addSolid(x,y+1,w,8);
   }
-  stoneWall(4,46.3,8); stoneWall(17,46.3,19); stoneWall(36,46.3,6); stoneWall(44,46.3,15);
+  stoneWall(4,46.3,8); stoneWall(17,46.3,11); stoneWall(30,46.3,14); stoneWall(44,46.3,15);
 
   /* --- the big street tree, on its own grass south of the biergarten --- */
   (function(){ const x=48*TS, y=42.2*TS;
@@ -1207,7 +1206,7 @@ function buildWorld(){
   })();
   interactable(20.5,33.2,1.6,'CHURCH SIGN',()=>say('CHURCH SIGN',
     ["FIRST TRINITY EVANGELICAL LUTHERAN CHURCH","DIVINE SERVICE: SUNDAY 11:00 AM","TODAY'S MESSAGE:","'THE WURST IS YET TO COME.'"]));
-  cornStalk(41.3,17.2); cornStalk(43.4,17.1);
+  cornStalk(27.1,27.05); cornStalk(30,27.05);
 
   /* --- red velvet rope queue along the path to the food line --- */
   (function(){
@@ -1248,7 +1247,7 @@ function buildWorld(){
     });
   })();
   interactable(6.6,33.2,1.9,'CORNHOLE',()=>{
-    say('RUTH', ["CORNHOLE! I'M RUTH. REIGNING CHAMPION.","THE OFFICIAL SPORT OF WAITING FOR BRATS.","SET YOUR POWER, THEN YOUR AIM.","SINK ONE AND I'LL BE IMPRESSED."], ()=>{ startCorn(); });
+    say('KRISTI', ["CORNHOLE! I'M KRISTI. REIGNING CHAMPION.","THE OFFICIAL SPORT OF WAITING FOR BRATS.","SET YOUR POWER, THEN YOUR AIM.","SINK ONE AND I'LL BE IMPRESSED."], ()=>{ startCorn(); });
   });
 
   /* --- lamp posts on the lawn --- */
@@ -1301,17 +1300,25 @@ function buildWorld(){
   /* ------------------------------------------------------------- NPCs */
   npc(14.2,33.8,{name:'PASTOR JANSSEN', hat:'collar', shirt:'#2b2b33', pants:'#1e1e26', hair:'#9a9a9a', wander:18,
     lines:["WELCOME, WELCOME! GOD'S WORK, FUN TIMES.","TRY THE PRETZELS. THEOLOGICALLY EXCELLENT.","WE'VE BEEN HERE SINCE 1837. THE BRATS ARE FRESHER."]});
-  npc(45.4,20.3,{name:'HEIDI', dress:'#2f7d46', hat:'braid', hair:'#8a5a30', still:true});
+  npc(45.4,20.3,{name:'MIRKA', dress:'#2f7d46', hat:'braid', hair:'#3a2a1a', still:true});
   npc(52.5,32.4,{name:'OTTO', hat:'feather', shirt:'#f5f0e6', pants:'#7a4f2a', straps:true, still:true});
   npc(52.3,18,{name:'DAVID', shirt:'#f5f0e6', pants:'#3a3a44', hat:'cap', hatColor:'#b03a3a', still:true,
     apron:true});
-  npc(19,39.5,{name:'AXEL', shirt:'#b03a3a', pants:'#3a3a44', hair:'#c9542f', wander:8,
+  npc(19,39.5,{name:'ALEX', shirt:'#b03a3a', pants:'#3a3a44', hair:'#c9542f', wander:8,
     lines:["RULE ONE: THROW THE AXE AT THE TARGET.","RULE TWO: ONLY AT THE TARGET.","THERE ARE NO OTHER RULES."]});
-  npc(7.5,31.8,{name:'RUTH', dress:'#8a4f9e', hat:'braid', hair:'#c9c2b2', still:true});
+  npc(7.5,31.8,{name:'KRISTI', dress:'#2b6db0', hat:'braid', hair:'#e8d24a', still:true});
   npc(38.2,7.1,{name:'CAITLYN', shirt:'#8a4f9e', pants:'#3a3a44', hair:'#6b4a2b', still:true});
   npc(42.2,7.1,{name:'DEBRA', dress:'#2b6db0', hat:'braid', hair:'#241d16', still:true});
   npc(49.5,11,{name:'DOODLES', hat:'puff', shirt:'#c17ad4', pants:'#e8d24a', nose:'#d94f4f', still:true});
-  npc(6.8,39.4,{name:'MARGE', dress:'#2b7a78', hair:'#9a9a9a', hat:'braid', still:true});
+  npc(6.8,39.4,{name:'TERRY', shirt:'#2b7a78', pants:'#3a3a44', hair:'#6b4a2b', hat:'cap', hatColor:'#2b7a78', still:true});
+  npc(49.5,34.3,{name:'MIKE', shirt:'#3b6ea8', pants:'#3a3a44', hair:'#6b4a2b', wander:10,
+    lines:["MIKE. LIFELONG MEMBER.","FIRST IN LINE FOR BRATS EVERY YEAR.","I PACE MYSELF. THE PACE IS FOUR."]});
+  npc(54.5,34.5,{name:'NORM', shirt:'#57b060', pants:'#241d16', hair:'#9a9a9a', wander:10,
+    lines:["NORM. I CAME FOR THE POLKA.","I STAYED BECAUSE I SAT DOWN","AND THESE CHAIRS ARE PRETTY GOOD."]});
+  npc(35.2,29,{name:'BRANDON', shirt:'#f5f0e6', pants:'#7a4f2a', hair:'#3a2a1a', wander:10,
+    lines:["BRANDON. PALM - PITTSBURGH AREA","LUTHERAN MINISTRIES. CLIPBOARD GUY.","IS IT JUST ME, OR DOES EVERYTHING LOOK","A LITTLE... PIXELATED TODAY?"]});
+  npc(35.2,33.4,{name:'PASTOR ANDRAE', hat:'collar', shirt:'#2b2b33', pants:'#1e1e26', hair:'#241d16', wander:10,
+    lines:["PASTOR ANDRAE. I'M HERE WITH LSF -","LUTHERAN STUDENT FELLOWSHIP.","COLLEGE STUDENTS RUN ON FREE FOOD","AND GENUINE COMMUNITY. IN THAT ORDER."]});
   npc(46,40.5,{name:'CHUCK', shirt:'#241d16', pants:'#d9b23a', hat:'cap', hatColor:'#241d16', wander:30,
     lines:["THIS IS BETTER THAN A STILLERS GAME.","DON'T TELL ANYONE I SAID DAT, YINZ.","I PUT KRAUT ON MY PRETZEL. I CONTAIN MULTITUDES."]});
   npc(40,13,{name:'PIPER', shirt:'#e8d24a', pants:'#4f7ed9', hair:'#3a2a1a', wander:40, fast:true,
@@ -1535,11 +1542,11 @@ function updateAxe(dt){
       if (a.result==='bull'){
         state='play';
         completeTask('axe');
-        say('AXEL',["BULLSEYE! INCREDIBLE!","YOU'RE BASICALLY A LUMBERJACK NOW.","THAT'S LEGALLY BINDING IN CANADA."]);
+        say('ALEX',["BULLSEYE! INCREDIBLE!","YOU'RE BASICALLY A LUMBERJACK NOW.","THAT'S LEGALLY BINDING IN CANADA."]);
       } else if (a.result==='close'){
-        say('AXEL',["SO CLOSE! THE HAY BALE FELT THAT.","AGAIN! AGAIN!"], ()=>startAxe());
+        say('ALEX',["SO CLOSE! THE HAY BALE FELT THAT.","AGAIN! AGAIN!"], ()=>startAxe());
       } else {
-        say('AXEL',["THAT HIT THE LAWN.","THE LAWN IS FINE. YOUR PRIDE, LESS SO.","AGAIN!"], ()=>startAxe());
+        say('ALEX',["THAT HIT THE LAWN.","THE LAWN IS FINE. YOUR PRIDE, LESS SO.","AGAIN!"], ()=>startAxe());
       }
       axeState = a.result==='bull' ? null : axeState;
     }
@@ -1576,15 +1583,15 @@ function updateCorn(dt){
       if (c.result==='hole'){
         state='play'; cornState=null;
         completeTask('corn');
-        say('RUTH',["IN THE HOLE! CLUNK.","RUTH RAISES ONE EYEBROW.","THAT IS THE HIGHEST HONOR SHE GIVES."]);
+        say('KRISTI',["IN THE HOLE! CLUNK.","KRISTI NODS SLOWLY.","THAT IS HER HIGHEST HONOR."]);
       } else if (c.result==='board'){
-        say('RUTH',["ON THE BOARD. IT SLID... AND STAYED.","'NOT BAD, SWEETIE.' - RUTH","AGAIN!"], ()=>startCorn());
+        say('KRISTI',["ON THE BOARD. IT SLID... AND STAYED.","'NOT BAD!' - KRISTI","AGAIN!"], ()=>startCorn());
       } else if (c.result==='short'){
-        say('RUTH',["PLOP. RIGHT IN FRONT OF THE BOARD.","'MORE ARM, SWEETIE.' - RUTH"], ()=>startCorn());
+        say('KRISTI',["PLOP. RIGHT IN FRONT OF THE BOARD.","'MORE ARM!' - KRISTI"], ()=>startCorn());
       } else if (c.result==='long'){
-        say('RUTH',["IT SAILED CLEAN OVER THE BOARD.","RUTH DUCKED. SHE DID NOT HAVE TO.","SHE DID IT FOR DRAMA."], ()=>startCorn());
+        say('KRISTI',["IT SAILED CLEAN OVER THE BOARD.","KRISTI DUCKED. SHE DID NOT HAVE TO.","SHE DID IT FOR DRAMA."], ()=>startCorn());
       } else {
-        say('RUTH',["WIDE. VERY WIDE.","A SQUIRREL IS NOW INVESTIGATING IT."], ()=>startCorn());
+        say('KRISTI',["WIDE. VERY WIDE.","A SQUIRREL IS NOW INVESTIGATING IT."], ()=>startCorn());
       }
     }
   }
@@ -1605,7 +1612,8 @@ function updateStein(dt){
       completeTask('stein');
       say('OTTO',["ARMS OF STEEL! STEIN OF GLORY!","YOU WIN THE RESPECT OF EVERYONE","AND ONE (1) COMMEMORATIVE COASTER."]);
     } else {
-      say('OTTO',["THE STEIN HAS FALLEN!","THE FIVE SECOND RULE DOES NOT APPLY TO BEVERAGES.","AGAIN?"], ()=>startStein());
+      state='play'; steinState=null;
+      say('OTTO',["THE STEIN HAS FALLEN!","THE FIVE SECOND RULE DOES NOT APPLY","TO BEVERAGES.","COME BACK WHEN YOUR ARM FORGIVES YOU."]);
     }
   }
 }

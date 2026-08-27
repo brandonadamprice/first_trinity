@@ -4,13 +4,15 @@ A tiny 2D pixel-art exploration game of the **First Trinity Oktoberfest**
 (First Trinity Evangelical-Lutheran Church, 533 N Neville St, Pittsburgh — est. 1837).
 
 The grounds are modeled on the official FOCUS Oktoberfest map: the Sanctuary
-(open for visits, with the Women's Sanctuary Restroom off the narthex), the
-fellowship hall, the parish hall with the Kid's Center + booths and the PLDM
-(Pittsburgh Lutheran Deaf Ministries) table, the PALM and LSF ministry tents,
-the axe throw, cornhole on the lawn, the food line by the grill patio behind
-the rectory, the back parking lot up the entrance driveway (exit driveway on
-the other side), and the Biergarten — where the Pittsburgh PolkaMeisters play
-at the front of the main tent, and requesting a song really changes the music.
+(open for visits, with the Women's Sanctuary Restroom off the narthex and the
+organ loft above it), one walkway leading up into the fellowship hallway — the
+Kid's Center + booths (Caitlyn at crafts, Debra at the PLDM table) are entered
+from the side through it — the PALM and LSF ministry tents (with Brandon and
+Pastor Andrae), the axe throw with Alex, cornhole with Kristi, Mirka's food
+line beside the rectory, David grilling out back, Terry at the info tent, the
+back parking lot connecting both driveways, and the Biergarten — where Mike
+and Norm hold down the tables and the Pittsburgh PolkaMeisters play facing
+the crowd. Requesting a song really changes the music.
 
 ## Play
 
@@ -30,17 +32,18 @@ embedded in a website.
 
 ### The Festkarte (quest list)
 
-Nine very important festival achievements:
+Ten very important festival achievements:
 
 1. 🥨 Grab a giant pretzel
 2. 🌭 Get a brat from the grill
-3. 🍺 Win the stein hold (mash to keep it up!)
+3. 🍺 Win the stein hold (mash to keep it up — losing is allowed, retrying is optional)
 4. 🪓 Hit a bullseye at the axe throw
-5. 🎈 Get a balloon dachshund
-6. 🎵 Request a song from the Pittsburgh PolkaMeisters
-7. ⛪ Visit the sanctuary altar
-8. 🐶 Pet Strudel the dachshund
-9. 🚻 Discover all three legendary restrooms
+5. 🌽 Sink a cornhole bag (set power, then aim — beat Kristi)
+6. 🎈 Get a balloon dachshund
+7. 🎵 Request a song from the Pittsburgh PolkaMeisters
+8. ⛪ Visit the sanctuary altar
+9. 🐶 Pet Strudel the dachshund
+10. 🚻 Discover all three legendary restrooms
 
 Finish them all to become an **OKTOBERFEST LEGEND**.
 
@@ -64,5 +67,6 @@ touch controls on phones/tablets.
 - Single-file HTML5 `<canvas>` game, 480×320 internal resolution, integer-scaled.
 - All sprites, tiles, and the church facade title screen are drawn procedurally.
 - Music is a little 2/4 chiptune oompah generated with the Web Audio API
-  (off by default; toggle with M or the ♪ button).
+  (on by default after your first input; toggle with M or the ♪ button —
+  four tunes total, three of them requestable from the band).
 - Text is rendered with a built-in 5×7 pixel bitmap font.
