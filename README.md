@@ -30,6 +30,11 @@ embedded in a website.
 | Quest list    | Tab / C               | ☰ QUESTS       |
 | Music on/off  | M                     | ♪ button       |
 
+On touch screens the game fills the display, the controls scale up for
+thumbs, and the D-pad is slideable — drag toward a corner to walk
+diagonally. Portrait phones get a Game Boy-style layout: a taller,
+zoomed-in view up top with the controls in their own space below.
+
 ### The Festkarte (quest list)
 
 Ten very important festival achievements:
@@ -72,8 +77,10 @@ touch controls on phones/tablets.
 - Text is rendered with a built-in 5×7 pixel bitmap font.
 - Dialogue is authored as **phrases** — one phrase is one complete thought,
   written out in full rather than hand-broken into display lines. At talk time
-  each phrase is word-wrapped to the box and packed into pages of `DLG_ROWS`
-  lines, and the box resizes to fit the page, so a long thought fills the box
-  and a short one doesn't leave it half empty. A new phrase always starts a new
+  each phrase is word-wrapped to the box's current width and packed into pages
+  of `DLG_ROWS` lines, and the box resizes to fit the page, so a long thought
+  fills the box and a short one doesn't leave it half empty. The wrap measures
+  the box rather than assuming 480, so it follows portrait mode down to 360 and
+  an open box re-wraps if the phone is rotated. A new phrase always starts a new
   box — that's how a punchline keeps its own beat. Put `\n` inside a phrase to
   force a break (signs and the noticeboard use this).
