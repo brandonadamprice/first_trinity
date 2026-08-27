@@ -358,7 +358,7 @@ rectT(1,1,3,48,T_ROAD,false);               // exit driveway: back lot, down the
 /* (the biergarten + grill areas are just grass; only real walkways are paved) */
 rectT(13,31,14,46,T_PATH,false);            // church walk
 rectT(12,36,43,37,T_PATH,false);            // path along the front, to the kids' walkway
-rectT(28,27,29,46,T_PATH,false);            // the one walkway: street up into the hallway door
+rectT(28,23,29,46,T_PATH,false);            // the one walkway: street up into the hallway door
 rectT(30,28,52,28,T_PATH,false);            // branch along the building fronts to the rectory
 
 /* --- church (sanctuary) --- */
@@ -369,10 +369,10 @@ rectT(13,10,15,29,T_CARPET,false);          // aisle
 setT(13,30,T_STEP,false); setT(14,30,T_STEP,false);   // door gap
 setT(24,12,T_PINK,false); setT(24,13,T_PINK,false);   // connector to hall (north end)
 
-/* --- fellowship hall corridor (pink) --- */
-wallRing(25,10,33,26);
-rectT(26,11,32,25,T_PINK,false);
-setT(28,26,T_PINK,false); setT(29,26,T_PINK,false);   // south door
+/* --- fellowship hall corridor (pink), set back from the street --- */
+wallRing(25,10,33,22);
+rectT(26,11,32,21,T_PINK,false);
+setT(28,22,T_PINK,false); setT(29,22,T_PINK,false);   // south door (recessed)
 setT(25,12,T_PINK,false); setT(25,13,T_PINK,false);   // west door to church (north end)
 setT(33,12,T_PINK,false); setT(33,13,T_PINK,false);   // east door to kid center
 
@@ -809,7 +809,7 @@ function buildWorld(){
     });
     addSolid(x,y+5,10,7);
   }
-  pottedPlant(26,11); pottedPlant(32,25); pottedPlant(35,7); pottedPlant(51,7);
+  pottedPlant(26,11); pottedPlant(32,20.5); pottedPlant(35,7); pottedPlant(51,7);
   (function(){ const x=26*TS-6, y=10.2*TS;  // bulletin board on the hall's top wall
     obj(x,y,y+13,(g)=>{
       g.fillStyle='#6b4a2b'; g.fillRect(x,y,20,13);
@@ -847,7 +847,7 @@ function buildWorld(){
   })();
 
   /* sign over the hallway door (the way in to the kid's center, from the side) */
-  (function(){ const cx=29*TS, y=26*TS+2;
+  (function(){ const cx=29*TS, y=22*TS+2;
     obj(cx,y,y+12,(g)=>{
       const label="KID'S CENTER", w=textW(label,1)+10;
       g.fillStyle='#f4e9c8'; g.fillRect(cx-w/2, y, w, 11);
@@ -864,24 +864,18 @@ function buildWorld(){
   interactable(32.5,34.1,1.8,'LSF TENT',()=>say('LSF',
     ["LUTHERAN STUDENT FELLOWSHIP.","COLLEGE STUDENTS POWERED BY GENUINE","COMMUNITY. (ALSO THE FREE FOOD.)"]));
 
-  /* --- food line: runs north-south along the left side of the rectory --- */
-  bigTent(44,17.4,3,'#f2f0ea','#e2dfd6','GRUB',{bunting:true});
-  (function(){ const x=44*TS, y=19.5*TS, h=64;  // vertical serving counter
-    obj(x,y,y+h+6,(g)=>{
-      g.fillStyle='rgba(0,0,0,0.12)'; g.fillRect(x+2,y+h,12,5);
-      g.fillStyle='#8a5a30'; g.fillRect(x,y,12,h);          // west face
-      g.fillStyle='#f4e9c8'; g.fillRect(x+2,y-2,12,h);      // cloth top
-      g.fillStyle='#e2d4a8'; g.fillRect(x+2,y-2,12,2);
-      // pretzels, tray, kraut pan spaced down the line
-      g.fillStyle='#d9a441'; g.fillRect(x+4,y+4,8,6); g.fillStyle='#b3812c'; g.fillRect(x+6,y+6,2,2);
-      g.fillStyle='#e8e4da'; g.fillRect(x+4,y+20,9,6); g.fillStyle='#d9cba0'; g.fillRect(x+6,y+22,5,3);
-      g.fillStyle='#c9c9cf'; g.fillRect(x+4,y+36,9,6); g.fillStyle='#d4c98a'; g.fillRect(x+6,y+38,5,3);
-      g.fillStyle='#d9a441'; g.fillRect(x+4,y+52,8,6); g.fillStyle='#b3812c'; g.fillRect(x+6,y+54,2,2);
+  /* --- GRUB line: in the gap between the parish building and the rectory --- */
+  bigTent(44,16.9,4,'#f2f0ea','#e2dfd6','GRUB',{bunting:true});
+  counterObj(44,19,4,'#f4e9c8');
+  (function(){ const x=44.3*TS, y=18.4*TS; // pretzels, tray, kraut pan on the counter
+    obj(x,y,y+40,(g)=>{
+      g.fillStyle='#d9a441'; g.fillRect(x+2,y,8,6); g.fillStyle='#b3812c'; g.fillRect(x+4,y+2,2,2);
+      g.fillStyle='#e8e4da'; g.fillRect(x+18,y,10,5); g.fillStyle='#d9cba0'; g.fillRect(x+20,y+1,6,3);
+      g.fillStyle='#c9c9cf'; g.fillRect(x+36,y,10,5); g.fillStyle='#d4c98a'; g.fillRect(x+38,y+1,6,3);
     });
-    addSolid(x,y-2,14,h+2);
   })();
-  // fork & spoon sign
-  (function(){ const x=41.1*TS, y=19.6*TS;
+  // fork & spoon sign at the back of the queue
+  (function(){ const x=44.2*TS, y=25.2*TS;
     obj(x,y,y+16,(g)=>{
       g.fillStyle='#6b4a2b'; g.fillRect(x+6,y+4,2,12);
       g.fillStyle='#57b060'; g.fillRect(x,y-6,14,12);
@@ -890,7 +884,7 @@ function buildWorld(){
     });
     addSolid(x+5,y+10,4,6);
   })();
-  interactable(43.9,21.3,1.8,'FOOD COUNTER',()=>{
+  interactable(45.5,19.9,1.8,'FOOD COUNTER',()=>{
     if (!done.pretzel){
       completeTask('pretzel');
       say('MIRKA', ["ONE GIANT PRETZEL! STILL WARM.","THE SECRET INGREDIENT IS LUTHERAN HOSPITALITY.","...AND BUTTER. MOSTLY BUTTER."]);
@@ -1044,7 +1038,6 @@ function buildWorld(){
       say('DAVID', ["BRATS! HOT OFF THE PATIO GRILL!","THE SMOKE FOLLOWS YOU BECAUSE IT LIKES YOU.","HERE - EXTRA KRAUT. TELL NO ONE."]);
     } else say('DAVID', ["BACK FOR SECONDS? I RESPECT IT."]);
   });
-  picnicTable(53.9,18.6);
   pottedPlant(54.6,17);
 
   /* --- the rectory (the pastor really lives here) --- */
@@ -1206,12 +1199,12 @@ function buildWorld(){
   })();
   interactable(20.5,33.2,1.6,'CHURCH SIGN',()=>say('CHURCH SIGN',
     ["FIRST TRINITY EVANGELICAL LUTHERAN CHURCH","DIVINE SERVICE: SUNDAY 11:00 AM","TODAY'S MESSAGE:","'THE WURST IS YET TO COME.'"]));
-  cornStalk(27.1,27.05); cornStalk(30,27.05);
+  cornStalk(27.1,23.05); cornStalk(30,23.05);
 
-  /* --- red velvet rope queue along the path to the food line --- */
+  /* --- red velvet rope queue leading up to the food line --- */
   (function(){
-    const posts=[[664,336],[664,360],[664,384],[664,408]];
-    obj(660,330,414,(g)=>{
+    const posts=[[714,330],[714,354],[714,378],[714,402]];
+    obj(710,324,408,(g)=>{
       g.strokeStyle='#c03636'; g.lineWidth=2;
       for(let i=0;i<posts.length-1;i++){
         const [ax,ay]=posts[i],[bx,by]=posts[i+1];
@@ -1224,7 +1217,7 @@ function buildWorld(){
       }
     });
   })();
-  interactable(41.2,23.2,1.2,'VELVET ROPE',()=>say('VELVET ROPE',
+  interactable(44.6,23.4,1.2,'VELVET ROPE',()=>say('VELVET ROPE',
     ["A RED VELVET ROPE. VERY EXCLUSIVE.","THE PRETZEL LINE HAS STANDARDS."]));
 
   /* --- cornhole on the front lawn --- */
@@ -1275,7 +1268,7 @@ function buildWorld(){
     });
     addSolid(x,y+2,22,11);
   }
-  bins(40.3,21.4); bins(38,30.5);
+  bins(53.8,18.4); bins(38,30.5);
 
   /* --- PA speakers on tripods by the stage --- */
   function paSpeaker(tx,ty){
@@ -1291,7 +1284,7 @@ function buildWorld(){
   paSpeaker(55.5,35.2); paSpeaker(55.5,41);
 
   /* --- Officer Dan, keeping the peace from a folding chair --- */
-  (function(){ const x=32.9*TS, y=26.9*TS;
+  (function(){ const x=32.9*TS, y=23.45*TS;
     obj(x,y,y+10,(g)=>{
       g.fillStyle='#8a5a30'; g.fillRect(x,y+2,11,3); g.fillRect(x+1,y+5,2,6); g.fillRect(x+8,y+5,2,6);
     });
@@ -1300,7 +1293,7 @@ function buildWorld(){
   /* ------------------------------------------------------------- NPCs */
   npc(14.2,33.8,{name:'PASTOR JANSSEN', hat:'collar', shirt:'#2b2b33', pants:'#1e1e26', hair:'#9a9a9a', wander:18,
     lines:["WELCOME, WELCOME! GOD'S WORK, FUN TIMES.","TRY THE PRETZELS. THEOLOGICALLY EXCELLENT.","WE'VE BEEN HERE SINCE 1837. THE BRATS ARE FRESHER."]});
-  npc(45.4,20.3,{name:'MIRKA', dress:'#2f7d46', hat:'braid', hair:'#3a2a1a', still:true});
+  npc(45.6,18.35,{name:'MIRKA', dress:'#2f7d46', hat:'braid', hair:'#3a2a1a', still:true});
   npc(52.5,32.4,{name:'OTTO', hat:'feather', shirt:'#f5f0e6', pants:'#7a4f2a', straps:true, still:true});
   npc(52.3,18,{name:'DAVID', shirt:'#f5f0e6', pants:'#3a3a44', hat:'cap', hatColor:'#b03a3a', still:true,
     apron:true});
@@ -1325,7 +1318,7 @@ function buildWorld(){
     lines:["I ATE FOUR PRETZELS AND I FEEL INVINCIBLE.","THE BALLOON GUY MADE ME A DOG! HIS NAME IS MR. SQUEAKS.","THE PLDM TABLE TAUGHT ME TO SIGN","'MORE PRETZELS PLEASE.' IT WORKS EVERY TIME."]});
   npc(52,36.5,{name:'GRETA', dress:'#b23a48', hat:'braid', hair:'#6b4a2b', wander:16,
     lines:["MY GRANDMOTHER'S DIRNDL. MY GRANDFATHER'S APPETITE.","THE POLKA IS IN 2/4 BUT MY HEART IS IN 6/8."]});
-  npc(32.95,26.35,{name:'OFFICER DAN', shirt:'#2b2b33', pants:'#241d16', hat:'cap', hatColor:'#241d16', still:true,
+  npc(32.95,22.9,{name:'OFFICER DAN', shirt:'#2b2b33', pants:'#241d16', hat:'cap', hatColor:'#241d16', still:true,
     lines:["EVERYTHING IS UNDER CONTROL.","THE ONLY CRIME HERE IS HOW GOOD THE BRATS ARE.","YES, I'VE HAD FOUR PRETZELS.","IT'S CALLED COMMUNITY POLICING."]});
 
   /* balloon clown interactable */
@@ -1467,7 +1460,7 @@ function update(dt){
           const n=best.npc;
           n.dir = (pcx < n.x+6) ? 'left' : 'right';
           if (Math.abs(pcy-(n.y+8)) > Math.abs(pcx-(n.x+6))) n.dir = (pcy<n.y+8)?'up':'down';
-          say(n.cfg.name, n.cfg.lines[(Math.random()*n.cfg.lines.length)|0]);
+          say(n.cfg.name, n.cfg.lines);
         }
         else best.action();
       }
