@@ -165,6 +165,7 @@ const FONT = {
    generated once and baked in - encoding it at runtime would mean
    shipping a QR encoder for one fixed URL. */
 const QR_URL = "https://www.firsttrinity.net/oktoberfest";
+const FB_URL = "https://facebook.com/events/s/first-trinity-german-lutheran-/4601546486790470/";
 const QR_TEXT = "FIRSTTRINITY.NET/OKTOBERFEST";
 const QR = [
   "11111110111100001001101111111",
@@ -288,16 +289,21 @@ function canvasPoint(e){
   const r = CVS.getBoundingClientRect();
   return [ (e.clientX-r.left) * (VW/r.width), (e.clientY-r.top) * (VH/r.height) ];
 }
+function linkAt(cx,cy){
+  if (state==='qr'  && qrHit(cx,cy))  return QR_URL;
+  if (state==='win' && inRect(winLayout().hit,cx,cy)) return FB_URL;
+  return null;
+}
 CVS.addEventListener('click', e=>{
   startAudioOnGesture();
-  if (state!=='qr') return;
   const [cx,cy] = canvasPoint(e);
-  if (qrHit(cx,cy)) openFestPage();
+  const url = linkAt(cx,cy);
+  if (url) openUrl(url);
 });
 CVS.addEventListener('mousemove', e=>{
-  if (state!=='qr'){ if (CVS.style.cursor) CVS.style.cursor=''; return; }
   const [cx,cy] = canvasPoint(e);
-  CVS.style.cursor = qrHit(cx,cy) ? 'pointer' : '';
+  const want = linkAt(cx,cy) ? 'pointer' : '';
+  if (CVS.style.cursor !== want) CVS.style.cursor = want;
 });
 
 function dirInput(){
@@ -2126,18 +2132,16 @@ function qrLayout(){
   return {n, QZ, s, side, px, py, pw, ph, qx, qy,
           hit:{x:qx, y:qy, w:side, h:side+16}};   // the code plus its url line
 }
-function qrHit(cx,cy){
-  const h = qrLayout().hit;
-  return cx>=h.x && cx<h.x+h.w && cy>=h.y && cy<h.y+h.h;
-}
-/* Opens the fest page in a new tab. An anchor click is more reliable than
-   window.open here: it opens a tab rather than a popup window, and carries
-   noopener so the new page can't reach back through window.opener. */
-function openFestPage(){
+function qrHit(cx,cy){ return inRect(qrLayout().hit, cx, cy); }
+/* Opens a link in a new tab. An anchor click is more reliable than window.open
+   here: it opens a tab rather than a popup window, and carries noopener so the
+   new page can't reach back through window.opener. */
+function openUrl(url){
   const a = document.createElement('a');
-  a.href = QR_URL; a.target = '_blank'; a.rel = 'noopener noreferrer';
+  a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
   document.body.appendChild(a); a.click(); a.remove();
 }
+function inRect(r,cx,cy){ return cx>=r.x && cx<r.x+r.w && cy>=r.y && cy<r.y+r.h; }
 /* Draws the code big enough to actually scan off the screen: dark modules on a
    light field, with the 4-module quiet zone the spec wants - an inverted code,
    or one butted against the dark panel, will not read on most phones. */
@@ -2269,16 +2273,36 @@ function drawSong(){
   drawText('# $ TO CHOOSE - '+(isTouch?'A':'E')+' TO REQUEST', VW/2, 186, 1, '#8fa3bf','center');
 }
 
+/* Layout in one place, like the QR panel, so the facebook button's hit box is
+   the box that got drawn. Centred rather than pinned, so it still sits right
+   on a tall portrait screen. */
+const WIN_LINK = 'SEE THE EVENT ON FACEBOOK';
+function winLayout(){
+  const pw = Math.min(VW-40, 380), ph = 230;
+  const px = Math.round((VW-pw)/2), py = Math.round((VH-ph)/2);
+  const linkY = py+180, lw = textW(WIN_LINK,1)+12;
+  return {px, py, pw, ph, linkY,
+          hit:{x:Math.round(VW/2-lw/2), y:linkY-4, w:lw, h:14}};
+}
 function drawWin(){
   updateConfettiDraw();
-  panel(50, 70, VW-100, 170, 'ZEHN VON ZEHN!');
-  drawText('YOU DID EVERYTHING AT OKTOBERFEST!', VW/2, 104, 1, '#f4e9c8','center');
-  drawText('PRETZELS EATEN. AXES THROWN. BAGS SUNK.', VW/2, 122, 1, '#f4e9c8','center');
-  drawText('RESTROOMS DISCOVERED. DOGS PETTED.', VW/2, 136, 1, '#f4e9c8','center');
-  drawText('YOU ARE AN', VW/2, 160, 1, '#f4e9c8','center');
-  drawText('OKTOBERFEST LEGEND', VW/2, 174, 2, '#e8d24a','center');
-  drawText('PROST! @', VW/2, 200, 1, '#d94f4f','center');
-  if (winState.t>1.2) drawText(isTouch?'TAP A TO KEEP PARTYING':'PRESS E TO KEEP PARTYING', VW/2, 220, 1, '#8fa3bf','center');
+  const L = winLayout(), y = L.py;
+  panel(L.px, y, L.pw, L.ph, 'ZEHN VON ZEHN!');
+  drawText('YOU DID EVERYTHING AT OKTOBERFEST!', VW/2, y+34, 1, '#f4e9c8','center');
+  drawText('PRETZELS EATEN. AXES THROWN. BAGS SUNK.', VW/2, y+52, 1, '#f4e9c8','center');
+  drawText('RESTROOMS DISCOVERED. DOGS PETTED.', VW/2, y+66, 1, '#f4e9c8','center');
+  drawText('YOU ARE AN', VW/2, y+90, 1, '#f4e9c8','center');
+  drawText('OKTOBERFEST LEGEND', VW/2, y+104, 2, '#e8d24a','center');
+  drawText('PROST! @', VW/2, y+130, 1, '#d94f4f','center');
+  /* now send them to the real thing */
+  drawText('NOW COME TO THE REAL ONE:', VW/2, y+152, 1, '#f4e9c8','center');
+  drawText('OCTOBER 10 AT 11 AM', VW/2, y+166, 1, '#e8d24a','center');
+  const h = L.hit;
+  CTX.fillStyle='#3b6ea8'; CTX.fillRect(h.x,h.y,h.w,h.h);
+  CTX.fillStyle='#5a8cc4'; CTX.fillRect(h.x,h.y,h.w,1);
+  drawText(WIN_LINK, VW/2, L.linkY, 1, '#f4e9c8','center');
+  if (winState.t>1.2) drawText(isTouch?'TAP A TO KEEP PARTYING':'PRESS E TO KEEP PARTYING',
+    VW/2, y+206, 1, '#8fa3bf','center');
 }
 function updateConfettiDraw(){
   for (const c of confetti){ CTX.fillStyle=c.col; CTX.fillRect(c.x, c.y, c.s, c.s); }

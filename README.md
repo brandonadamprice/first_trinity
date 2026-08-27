@@ -53,7 +53,9 @@ Ten very important festival achievements:
 9. 🐶 Pet Strudel the dachshund
 10. 🚻 Discover all three legendary restrooms
 
-Finish them all to become an **OKTOBERFEST LEGEND**.
+Finish them all to become an **OKTOBERFEST LEGEND** — and the win screen
+invites you to the real thing on **October 10 at 11 AM**, with a button
+through to the Facebook event.
 
 ## Embedding in a website
 
