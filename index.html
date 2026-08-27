@@ -352,15 +352,14 @@ function wallRing(x1,y1,x2,y2){
 /* --- streets & paths --- */
 rectT(0,48,MW-1,MH-1,T_ROAD,false);
 rectT(0,46,MW-1,47,T_SIDE,false);
-rectT(30,1,61,4,T_PARK,false);              // parking lot behind the buildings
+rectT(4,1,61,4,T_PARK,false);               // parking lot behind the buildings
 rectT(59,2,61,47,T_ROAD,false);             // driveway up the right side (in)
-rectT(1,5,3,47,T_ROAD,false);               // exit driveway down the left side of the church
-rectT(37,33,57,44,T_PLAZA,false);           // biergarten plaza
-/* (the grill area behind the rectory stays grass) */
+rectT(1,1,3,47,T_ROAD,false);               // exit driveway: back lot, down the left side of the church
+/* (the biergarten + grill areas are just grass; only real walkways are paved) */
 rectT(13,31,14,45,T_PATH,false);            // church walk
-rectT(12,36,57,37,T_PATH,false);            // main east-west path
+rectT(12,36,43,37,T_PATH,false);            // path along the front, to the kids' walkway
 rectT(28,27,29,36,T_PATH,false);            // corridor door path
-rectT(42,17,43,33,T_PATH,false);            // kid center door path
+rectT(42,17,43,44,T_PATH,false);            // walkway to the kids' entrance (down to the street)
 
 /* --- church (sanctuary) --- */
 wallRing(4,6,24,30);
@@ -384,7 +383,7 @@ setT(34,12,T_KID,false); setT(34,13,T_KID,false);     // west door
 setT(42,16,T_KID,false); setT(43,16,T_KID,false);     // south door
 
 /* flower beds near church steps */
-setT(11,31,T_FLOWER,true); setT(16,31,T_FLOWER,true);
+/* big bushes in mulch beds flank the front steps (drawn as objects) */
 
 /* ============================================================ TILE ART */
 const tileCanvas = document.createElement('canvas');
@@ -701,8 +700,7 @@ function interactable(tx,ty,r,name,action){
 
 /* ======================================================== BUILD THE FEST */
 function buildWorld(){
-  /* --- trees around border (leaving room for the back lot + both driveways) --- */
-  for (let x=4;x<28;x+=3){ if (x>24||hash2(x,1)>0.35) tree(x, 1+((hash2(x,7)*2)|0), (x%4)); }
+  /* --- trees around border (the back lot now spans the whole top) --- */
   for (let y=6;y<28;y+=4){ tree(62, y, ((y+1)%4)); }
   tree(57.5,22,0); tree(34,25,1); tree(22,32,3); tree(55,17,2);
 
@@ -722,15 +720,21 @@ function buildWorld(){
     say('SANCTUARY', ["SUNBEAMS DRIFT THROUGH THE STAINED GLASS.",
       "EVEN THE TUBA OUTSIDE GOES QUIET FOR A SECOND.", "...OK IT'S BACK."]);
   });
-  // organ pipes
-  (function(){ const x=6*TS, y=7*TS;
-    obj(x,y,y+16,(g)=>{
-      g.fillStyle='#6e5a3a'; g.fillRect(x,y+8,28,8);
-      g.fillStyle='#c9c2b2'; for(let i=0;i<6;i++) g.fillRect(x+2+i*4,y-2-((i%3)*3),3,10+((i%3)*3));
+  // the pipe organ lives in the loft above the narthex (player walks under it)
+  (function(){ const x=6*TS, y=29.1*TS, w=17*TS;
+    obj(x,y,31*TS,(g)=>{
+      g.fillStyle='#6e5a3a'; g.fillRect(x,y,w,20);
+      g.fillStyle='#7d6845'; g.fillRect(x,y,w,3);
+      g.fillStyle='#54432a'; for(let i=4;i<w-4;i+=8) g.fillRect(x+i,y+1,2,8);
+      const cx=x+w/2;
+      g.fillStyle='#8a744c'; g.fillRect(cx-46,y+4,92,14);
+      g.fillStyle='#c9c2b2';
+      for(let i=0;i<11;i++){ const h=8+(5-Math.abs(i-5))*2; g.fillRect(cx-42+i*8,y+18-h,5,h); }
+      g.fillStyle='#e8d24a'; g.fillRect(cx-46,y+16,92,2);
     });
-    addSolid(x,y+6,28,10);
   })();
-  interactable(6.8,7.5,1.4,'ORGAN',()=>say('PIPE ORGAN',["DO NOT PLAY THE ORGAN.","YOU PLAY ONE NOTE AND SUDDENLY IT'S A WHOLE THING."]));
+  interactable(15.8,28.6,1.5,'ORGAN LOFT',()=>say('ORGAN LOFT',
+    ["THE PIPE ORGAN IS UP IN THE LOFT","ABOVE THE NARTHEX.","ON SUNDAYS IT MAKES THE FLOOR HUM.","DO NOT PLAY IT. YOU PLAY ONE NOTE","AND SUDDENLY IT'S A WHOLE THING."]));
   // pews
   for (let r=0;r<8;r++){
     const y=(13+r*2)*TS;
@@ -863,15 +867,21 @@ function buildWorld(){
   interactable(32.5,34.1,1.8,'LSF TENT',()=>say('LSF',
     ["LUTHERAN STUDENT FELLOWSHIP.","COLLEGE STUDENTS POWERED BY GENUINE","COMMUNITY. (ALSO THE FREE FOOD.)"]));
 
-  /* --- food canopy beside the grill patio (like the photos) --- */
-  bigTent(44,16.2,5,'#f2f0ea','#e2dfd6','GRUB',{bunting:true});
-  counterObj(44,19,5,'#f4e9c8');
-  (function(){ const x=44.4*TS, y=18.4*TS; // pretzels + salads on the counter
-    obj(x,y,y+40,(g)=>{
-      g.fillStyle='#d9a441'; g.fillRect(x+2,y,8,6); g.fillStyle='#b3812c'; g.fillRect(x+4,y+2,2,2); g.fillRect(x+7,y+1,1,1);
-      g.fillStyle='#e8e4da'; g.fillRect(x+16,y,10,5); g.fillStyle='#d9cba0'; g.fillRect(x+18,y+1,6,3);
-      g.fillStyle='#d9a441'; g.fillRect(x+32,y,8,6); g.fillStyle='#b3812c'; g.fillRect(x+34,y+2,2,2);
+  /* --- food line: runs north-south along the left side of the rectory --- */
+  bigTent(44,16.6,3,'#f2f0ea','#e2dfd6','GRUB',{bunting:true});
+  (function(){ const x=44*TS, y=19.5*TS, h=64;  // vertical serving counter
+    obj(x,y,y+h+6,(g)=>{
+      g.fillStyle='rgba(0,0,0,0.12)'; g.fillRect(x+2,y+h,12,5);
+      g.fillStyle='#8a5a30'; g.fillRect(x,y,12,h);          // west face
+      g.fillStyle='#f4e9c8'; g.fillRect(x+2,y-2,12,h);      // cloth top
+      g.fillStyle='#e2d4a8'; g.fillRect(x+2,y-2,12,2);
+      // pretzels, tray, kraut pan spaced down the line
+      g.fillStyle='#d9a441'; g.fillRect(x+4,y+4,8,6); g.fillStyle='#b3812c'; g.fillRect(x+6,y+6,2,2);
+      g.fillStyle='#e8e4da'; g.fillRect(x+4,y+20,9,6); g.fillStyle='#d9cba0'; g.fillRect(x+6,y+22,5,3);
+      g.fillStyle='#c9c9cf'; g.fillRect(x+4,y+36,9,6); g.fillStyle='#d4c98a'; g.fillRect(x+6,y+38,5,3);
+      g.fillStyle='#d9a441'; g.fillRect(x+4,y+52,8,6); g.fillStyle='#b3812c'; g.fillRect(x+6,y+54,2,2);
     });
+    addSolid(x,y-2,14,h+2);
   })();
   // fork & spoon sign
   (function(){ const x=41.1*TS, y=19.6*TS;
@@ -883,7 +893,7 @@ function buildWorld(){
     });
     addSolid(x+5,y+10,4,6);
   })();
-  interactable(44.9,19.3,1.8,'FOOD COUNTER',()=>{
+  interactable(43.9,21.3,1.8,'FOOD COUNTER',()=>{
     if (!done.pretzel){
       completeTask('pretzel');
       say('HEIDI', ["ONE GIANT PRETZEL! STILL WARM.","THE SECRET INGREDIENT IS LUTHERAN HOSPITALITY.","...AND BUTTER. MOSTLY BUTTER."]);
@@ -977,35 +987,51 @@ function buildWorld(){
     });
     addSolid(x,y+2,22,12);
   })();
-  // the band plays at the front, under the main tent
-  (function(){ const x=38*TS, y=30.5*TS;
-    obj(x,y,y+26,(g)=>{
-      g.fillStyle='#754b26'; g.fillRect(x,y+8,128,18);
-      g.fillStyle='#8a5a30'; g.fillRect(x,y+6,128,4);
-      // the PITTSBURGH POLKAMEISTERS: bandleader on accordion
-      drawPerson(g, x+18, y-8, 'down', 0, {hat:'feather', hatColor:'#b03a3a', shirt:'#f5f0e6', pants:'#3a3a44', straps:true});
-      g.fillStyle='#3b6ea8'; g.fillRect(x+15,y-1,4,6); g.fillStyle='#f4e9c8'; g.fillRect(x+19,y-1,3,6); g.fillStyle='#3b6ea8'; g.fillRect(x+22,y-1,4,6);
-      // guitarist in the cowboy hat
-      drawPerson(g, x+38, y-6, 'down', 0, {hat:'cowboy', shirt:'#3a3a44', pants:'#2b2b33'});
-      g.fillStyle='#a06c3a'; g.fillRect(x+40,y+1,6,5); g.fillRect(x+46,y+2,6,2);
-      // tuba player
-      drawPerson(g, x+58, y-8, 'down', 0, {hat:'feather', shirt:'#f5f0e6', pants:'#7a4f2a', straps:true});
-      g.fillStyle='#d9b23a'; g.fillRect(x+66,y-6,7,7); g.fillRect(x+68,y+1,3,6);
-      // accordion gal
-      drawPerson(g, x+96, y-8, 'down', 0, {dress:'#b23a48', hat:'braid', hair:'#8a5a30'});
-      g.fillStyle='#d94f4f'; g.fillRect(x+94,y-1,4,5); g.fillStyle='#f4e9c8'; g.fillRect(x+98,y-1,3,5); g.fillStyle='#d94f4f'; g.fillRect(x+101,y-1,4,5);
-    });
-    addSolid(x,y+6,128,20);
+  // extra tables under the main tent
+  picnicTable(39,33.6); picnicTable(44.2,33.6);
+  // rows of folding chairs facing the band (like the photo)
+  (function(){
+    for (const [cx,cy] of [[52.4,39.35],[52.4,40.45]]){
+      const x=cx*TS, y=cy*TS;
+      obj(x,y,y+10,(g)=>{
+        for(let i=0;i<4;i++){
+          const px=x+i*12;
+          g.fillStyle='#8a5a30'; g.fillRect(px,y,2,9);
+          g.fillStyle='#a06c3a'; g.fillRect(px+2,y+3,7,4);
+          g.fillStyle='#754b26'; g.fillRect(px+2,y+7,2,3); g.fillRect(px+7,y+7,2,3);
+        }
+      });
+    }
   })();
-  interactable(42,33.5,2.2,'STAGE',()=>{
+  // the POLKAMEISTERS: between the two rows of tables, right side, facing the people
+  (function(){ const x=56*TS, y=38.6*TS;
+    obj(x,y,y+60,(g)=>{
+      g.fillStyle='#754b26'; g.fillRect(x,y+2,38,56);
+      g.fillStyle='#8a5a30'; g.fillRect(x,y,38,4);
+      // bandleader on accordion
+      drawPerson(g, x+14, y-4, 'left', 0, {hat:'feather', hatColor:'#b03a3a', shirt:'#f5f0e6', pants:'#3a3a44', straps:true});
+      g.fillStyle='#3b6ea8'; g.fillRect(x+8,y+3,3,6); g.fillStyle='#f4e9c8'; g.fillRect(x+11,y+3,3,6); g.fillStyle='#3b6ea8'; g.fillRect(x+14,y+3,3,6);
+      // guitarist in the cowboy hat
+      drawPerson(g, x+16, y+12, 'left', 0, {hat:'cowboy', shirt:'#3a3a44', pants:'#2b2b33'});
+      g.fillStyle='#a06c3a'; g.fillRect(x+8,y+20,7,5); g.fillRect(x+4,y+21,5,2);
+      // tuba player
+      drawPerson(g, x+14, y+28, 'left', 0, {hat:'feather', shirt:'#f5f0e6', pants:'#7a4f2a', straps:true});
+      g.fillStyle='#d9b23a'; g.fillRect(x+6,y+26,7,7); g.fillRect(x+9,y+33,3,5);
+      // accordion gal
+      drawPerson(g, x+16, y+42, 'left', 0, {dress:'#b23a48', hat:'braid', hair:'#8a5a30'});
+      g.fillStyle='#d94f4f'; g.fillRect(x+9,y+49,3,5); g.fillStyle='#f4e9c8'; g.fillRect(x+12,y+49,3,5); g.fillStyle='#d94f4f'; g.fillRect(x+15,y+49,3,5);
+    });
+    addSolid(x,y+2,38,56);
+  })();
+  interactable(55.4,40.5,2.2,'STAGE',()=>{
     if (!done.song){
       say('POLKAMEISTERS', ["WE ARE THE PITTSBURGH POLKAMEISTERS!","WE KNOW 400 POLKAS","AND ONE (1) JOURNEY SONG.","GOT A REQUEST?"], ()=>{ startSong(); });
     } else {
       say('POLKAMEISTERS', ["BACK FOR MORE? WHAT'LL IT BE?"], ()=>{ startSong(); });
     }
   });
-  /* --- the grill, under the serving canopy by the patio --- */
-  (function(){ const x=46.6*TS, y=18.1*TS;
+  /* --- the grill, in the space behind the rectory --- */
+  (function(){ const x=50.5*TS, y=17.9*TS;
     obj(x,y,y+16,(g)=>{
       g.fillStyle='#3a3a40'; g.fillRect(x,y,26,10); g.fillRect(x+3,y+10,3,6); g.fillRect(x+20,y+10,3,6);
       g.fillStyle='#222226'; g.fillRect(x+2,y+2,22,6);
@@ -1013,14 +1039,14 @@ function buildWorld(){
     });
     addSolid(x,y+2,26,13);
   })();
-  interactable(47,19.3,1.9,'GRILL',()=>{
+  interactable(51.3,19.2,1.9,'GRILL',()=>{
     if (!done.brat){
       completeTask('brat');
       say('DAVID', ["BRATS! HOT OFF THE PATIO GRILL!","THE SMOKE FOLLOWS YOU BECAUSE IT LIKES YOU.","HERE - EXTRA KRAUT. TELL NO ONE."]);
     } else say('DAVID', ["BACK FOR SECONDS? I RESPECT IT."]);
   });
-  picnicTable(49,18.5);
-  pottedPlant(52,17);
+  picnicTable(53.9,18.6);
+  pottedPlant(54.6,17);
 
   /* --- the rectory (the pastor really lives here) --- */
   (function(){ const x=48*TS, y=20*TS, w=9*TS;
@@ -1066,8 +1092,8 @@ function buildWorld(){
   interactable(52.5,27.8,1.9,'RECTORY',()=>say('RECTORY',
     ["THIS IS THE RECTORY. THE PASTOR REALLY LIVES HERE.","YES, THE BRATWURST SMOKE REACHES THE KITCHEN.","NO, YOU CANNOT SEE THE FRIDGE."]));
   // picnic tables
-  picnicTable(43,38); picnicTable(48,38); picnicTable(53,38);
-  picnicTable(43,41.5); picnicTable(48,41.5); picnicTable(53,41.5);
+  picnicTable(44.2,38); picnicTable(48.5,38); picnicTable(53,38);
+  picnicTable(44.2,41.5); picnicTable(48.5,41.5); picnicTable(53,41.5);
   picnicTable(36.5,23);   // lawn table near the food line
   interactable(49.5,39,1.4,'TABLE',()=>say('EDNA',["I'VE BEEN COMING SINCE 1962.","THE PRETZELS HAVE ONLY GOTTEN BIGGER.","SIT. EAT. YOU'RE TOO SKINNY."]));
   // string lights over the plaza
@@ -1101,6 +1127,7 @@ function buildWorld(){
   }
   car(30.5,1.6,'#b03a3a'); car(33.5,2.2,'#3b6ea8'); car(36.6,1.8,'#d9b23a');
   car(42.5,2.1,'#57b060'); car(45.6,1.7,'#8a4f9e'); car(51.5,2.3,'#e8e4da');
+  car(10.5,1.8,'#3a3a44'); car(17.5,2.2,'#b3812c');
   (function(){ const x=57*TS, y=37*TS;   // P sign pointing up the driveway
     obj(x,y,y+16,(g)=>{
       g.fillStyle='#6b4a2b'; g.fillRect(x+7,y+2,2,14);
@@ -1113,7 +1140,35 @@ function buildWorld(){
   interactable(45,3,2.5,'PARKING LOT',()=>say('THE BACK LOT',["THE SECRET PARKING LOT BEHIND THE CHURCH.","ONLY LOCALS KNOW ABOUT IT.","...AND NOW YOU. WELCOME TO THE INNER CIRCLE."]));
 
   /* --- pumpkins scattered --- */
-  pumpkin(11.2,30.2); pumpkin(16.5,30.2); pumpkin(5,36); pumpkin(35.5,44.5); pumpkin(21,35.9); pumpkin(57.4,20.6);
+  pumpkin(12.2,31.6); pumpkin(16,32); pumpkin(5,36); pumpkin(35.3,43.8); pumpkin(21,35.9); pumpkin(57.4,20.6);
+
+  /* --- low stone retaining wall along the front lawn (street view!) --- */
+  function stoneWall(tx,ty,tw){
+    const x=tx*TS, y=ty*TS, w=tw*TS;
+    obj(x,y,y+9,(g)=>{
+      g.fillStyle='#a8a094'; g.fillRect(x,y,w,9);
+      g.fillStyle='#b8b0a4'; g.fillRect(x,y,w,2);
+      g.fillStyle='#948c80'; for(let i=10;i<w;i+=10) g.fillRect(x+i,y+2,1,7);
+      g.fillStyle='#8a8276'; g.fillRect(x,y+8,w,1);
+    });
+    addSolid(x,y+1,w,8);
+  }
+  stoneWall(4,44.9,8); stoneWall(17,44.9,19);
+
+  /* --- the hand-painted WELCOME STUDENTS! sign --- */
+  (function(){ const x=33.2*TS, y=43.2*TS;
+    obj(x,y,y+14,(g)=>{
+      g.fillStyle='#6b4a2b'; g.fillRect(x+6,y+2,3,12); g.fillRect(x+46,y+2,3,12);
+      g.fillStyle='#2b5f9e'; g.fillRect(x,y-18,56,11);
+      g.fillStyle='#b03a3a'; g.fillRect(x,y-7,56,11);
+      g.fillStyle='#f4e9c8'; g.fillRect(x+1,y-18,54,1); g.fillRect(x+1,y+3,54,1);
+      drawText('WELCOME', x+28, y-15, 1, '#f4e9c8','center');
+      drawText('STUDENTS!', x+28, y-5, 1, '#f4e9c8','center');
+    });
+    addSolid(x+5,y+8,45,6);
+  })();
+  interactable(35,43.5,1.6,'SIGN',()=>say('WELCOME STUDENTS!',
+    ["A HAND-PAINTED SIGN AIMED AT PITT AND CMU.","IT SAYS 'FREE FOOD' IN COLLEGE STUDENT.","IT NEVER MISSES."]));
 
   /* --- corn stalks flanking the doors (fall decor, like the photos) --- */
   function cornStalk(tx,ty){
@@ -1125,6 +1180,35 @@ function buildWorld(){
     });
   }
   cornStalk(12.3,30.1); cornStalk(15.2,30.1);
+
+  /* --- big bushes in red-mulch beds by the front steps --- */
+  function bigBush(tx,ty){
+    const x=tx*TS, y=ty*TS;
+    obj(x,y,y+18,(g)=>{
+      g.fillStyle='#6e3a2e'; g.fillRect(x,y+8,24,12);
+      g.fillStyle='#5e3226'; g.fillRect(x,y+18,24,2);
+      g.fillStyle='#5d7a4e'; g.fillRect(x+2,y+2,20,13);
+      g.fillStyle='#6f8f5f'; g.fillRect(x+4,y,16,12); g.fillRect(x+1,y+5,22,7);
+      g.fillStyle='#82a06e'; g.fillRect(x+6,y+1,8,4); g.fillRect(x+3,y+6,5,3);
+    });
+    addSolid(x+1,y+6,22,12);
+  }
+  bigBush(10.4,30.6); bigBush(15.9,30.6);
+
+  /* --- the church sign board on the front lawn --- */
+  (function(){ const x=19.5*TS, y=32.6*TS;
+    obj(x,y,y+16,(g)=>{
+      g.fillStyle='#6b4a2b'; g.fillRect(x+3,y+6,3,10); g.fillRect(x+26,y+6,3,10);
+      g.fillStyle='#2b2b33'; g.fillRect(x,y-14,32,22);
+      g.fillStyle='#f4e9c8'; g.fillRect(x+1,y-13,30,1);
+      g.fillStyle='#d9cba0';
+      g.fillRect(x+4,y-9,24,2); g.fillRect(x+6,y-5,20,2); g.fillRect(x+4,y-1,24,2); g.fillRect(x+8,y+3,16,2);
+      g.fillStyle='#c8a041'; g.fillRect(x+14,y-19,4,4); g.fillRect(x+12,y-17,8,2);
+    });
+    addSolid(x+2,y+10,28,6);
+  })();
+  interactable(20.5,33.2,1.6,'CHURCH SIGN',()=>say('CHURCH SIGN',
+    ["FIRST TRINITY EVANGELICAL LUTHERAN CHURCH","DIVINE SERVICE: SUNDAY 9:30 AM","TODAY'S MESSAGE:","'THE WURST IS YET TO COME.'"]));
   cornStalk(41.3,17.2); cornStalk(43.4,17.1);
 
   /* --- red velvet rope queue along the path to the food line --- */
@@ -1206,7 +1290,7 @@ function buildWorld(){
     });
     addSolid(x+2,y+14,10,6);
   }
-  paSpeaker(37.1,32.6); paSpeaker(46.4,32.6);
+  paSpeaker(55.5,37.2); paSpeaker(55.5,43);
 
   /* --- Officer Dan, keeping the peace from a folding chair --- */
   (function(){ const x=32.9*TS, y=26.9*TS;
@@ -1218,9 +1302,9 @@ function buildWorld(){
   /* ------------------------------------------------------------- NPCs */
   npc(19,31.5,{name:'PASTOR JANSSEN', hat:'collar', shirt:'#2b2b33', pants:'#1e1e26', hair:'#9a9a9a', wander:24,
     lines:["WELCOME, WELCOME! GOD'S WORK, FUN TIMES.","TRY THE PRETZELS. THEOLOGICALLY EXCELLENT.","WE'VE BEEN HERE SINCE 1837. THE BRATS ARE FRESHER."]});
-  npc(44.3,17.8,{name:'HEIDI', dress:'#2f7d46', hat:'braid', hair:'#8a5a30', still:true});
+  npc(45.4,20.3,{name:'HEIDI', dress:'#2f7d46', hat:'braid', hair:'#8a5a30', still:true});
   npc(52.5,32.4,{name:'OTTO', hat:'feather', shirt:'#f5f0e6', pants:'#7a4f2a', straps:true, still:true});
-  npc(47.6,17.7,{name:'DAVID', shirt:'#f5f0e6', pants:'#3a3a44', hat:'cap', hatColor:'#b03a3a', still:true,
+  npc(52.3,18,{name:'DAVID', shirt:'#f5f0e6', pants:'#3a3a44', hat:'cap', hatColor:'#b03a3a', still:true,
     apron:true});
   npc(19,39.5,{name:'AXEL', shirt:'#b03a3a', pants:'#3a3a44', hair:'#c9542f', wander:8,
     lines:["RULE ONE: THROW THE AXE AT THE TARGET.","RULE TWO: ONLY AT THE TARGET.","THERE ARE NO OTHER RULES."]});
@@ -1418,10 +1502,10 @@ function update(dt){
     if (l.y > MH*TS){ l.y = -8; l.x = rr(0,MW*TS); }
   }
   if (musicOn && Math.random()<dt*3){
-    notes.push({x:42*TS+rr(-40,40), y:31*TS, t:0});
+    notes.push({x:56.5*TS+rr(-20,20), y:39.5*TS+rr(-20,20), t:0});
   }
   for (let i=notes.length-1;i>=0;i--){ const n=notes[i]; n.t+=dt; n.y-=dt*18; n.x+=Math.sin(n.t*5)*0.5; if(n.t>2)notes.splice(i,1); }
-  if (Math.random()<dt*4) smoke.push({x:46.5*TS+rr(0,20), y:17.6*TS, t:0});
+  if (Math.random()<dt*4) smoke.push({x:50.6*TS+rr(0,20), y:17.8*TS, t:0});
   for (let i=smoke.length-1;i>=0;i--){ const s=smoke[i]; s.t+=dt; s.y-=dt*12; if(s.t>1.6)smoke.splice(i,1); }
 }
 
@@ -1487,7 +1571,7 @@ function updateSong(dt){
     completeTask('song');
     if (!musicOn) toggleMusic();
     setSong(['barrel','chicken','journey'][s.sel]);
-    for(let i=0;i<10;i++) notes.push({x:42*TS+rr(-50,50), y:31*TS+rr(-8,8), t:rr(0,-0.5)});
+    for(let i=0;i<10;i++) notes.push({x:56.3*TS+rr(-25,25), y:39.5*TS+rr(-20,20), t:rr(0,-0.5)});
     say('POLKAMEISTERS', ["'"+SONGS[s.sel]+"' COMIN' RIGHT UP!","A-EINS! A-ZWEI! A-TUBA!"]);
   }
 }
