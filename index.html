@@ -1324,24 +1324,38 @@ function buildWorld(){
     obj(x,y,y+60,(g)=>{
       g.fillStyle='#754b26'; g.fillRect(x,y+2,38,56);
       g.fillStyle='#8a5a30'; g.fillRect(x,y,38,4);
-      // bandleader on accordion
+      // bandleader on accordion - he's the vocalist too, so the mic booms in
+      // over the bellows from a stand set clear of them
       drawPerson(g, x+14, y-4, 'left', 0, {hat:'feather', hatColor:'#b03a3a', shirt:'#f5f0e6', pants:'#3a3a44', straps:true});
       g.fillStyle='#3b6ea8'; g.fillRect(x+8,y+3,3,6); g.fillStyle='#f4e9c8'; g.fillRect(x+11,y+3,3,6); g.fillStyle='#3b6ea8'; g.fillRect(x+14,y+3,3,6);
-      // guitarist in the cowboy hat
+      g.fillStyle='#4a4a52'; g.fillRect(x+6,y,1,12); g.fillRect(x+6,y,9,1); g.fillRect(x+4,y+11,5,1);
+      g.fillStyle='#c9c9cf'; g.fillRect(x+15,y-1,2,3);
+      // clarinet, in the cowboy hat - angled down from the mouthpiece to the bell
       drawPerson(g, x+16, y+12, 'left', 0, {hat:'cowboy', shirt:'#3a3a44', pants:'#2b2b33'});
-      g.fillStyle='#a06c3a'; g.fillRect(x+8,y+20,7,5); g.fillRect(x+4,y+21,5,2);
+      g.fillStyle='#17151a'; g.fillRect(x+16,y+16,3,2); g.fillRect(x+13,y+18,3,2); g.fillRect(x+10,y+20,3,2); g.fillRect(x+7,y+21,3,4);
+      g.fillStyle='#c9c9cf'; g.fillRect(x+14,y+17,1,1); g.fillRect(x+11,y+19,1,1);
       // tuba player
       drawPerson(g, x+14, y+28, 'left', 0, {hat:'feather', shirt:'#f5f0e6', pants:'#7a4f2a', straps:true});
       g.fillStyle='#d9b23a'; g.fillRect(x+6,y+26,7,7); g.fillRect(x+9,y+33,3,5);
-      // accordion gal
+      // drummer - kit sits between her and the crowd, cymbal stand first so
+      // the snare paints over its foot
       drawPerson(g, x+16, y+42, 'left', 0, {dress:'#b23a48', hat:'braid', hair:'#8a5a30'});
-      g.fillStyle='#d94f4f'; g.fillRect(x+9,y+49,3,5); g.fillStyle='#f4e9c8'; g.fillRect(x+12,y+49,3,5); g.fillStyle='#d94f4f'; g.fillRect(x+15,y+49,3,5);
+      g.fillStyle='#b9b9c2'; g.fillRect(x+7,y+45,1,7);                            // cymbal stand
+      g.fillStyle='#d9b23a'; g.fillRect(x+4,y+44,8,1); g.fillRect(x+6,y+45,4,1);  // cymbal
+      g.fillStyle='#8a2f38'; g.fillRect(x+9,y+51,9,6);                            // bass drum
+      g.fillStyle='#f4e9c8'; g.fillRect(x+10,y+52,7,4);
+      g.fillStyle='#8a2f38'; g.fillRect(x+12,y+53,3,2);                           // its port hole
+      g.fillStyle='#d9b23a'; g.fillRect(x+9,y+51,9,1); g.fillRect(x+9,y+56,9,1);  // hoops
+      g.fillStyle='#f4e9c8'; g.fillRect(x+2,y+50,6,1);                            // snare
+      g.fillStyle='#b9b9c2'; g.fillRect(x+2,y+51,6,2);
+      g.fillStyle='#5a5a62'; g.fillRect(x+2,y+53,6,1);
+      g.fillStyle='#e0c08a'; g.fillRect(x+13,y+49,5,1);                           // stick, out to her hand
     });
     addSolid(x,y+2,38,56);
   })();
   interactable(55.4,38.5,2.2,'STAGE',()=>{
     if (!met.band){ met.band = true;   // greeting is once-per-visit, not once-per-quest:
-      say('POLKAMEISTERS', ["WELCOME TO THE STAGE! FOUR HORNS AND ONE VERY COMMITTED ACCORDION.","WE KNOW 400 POLKAS AND ONE (1) JOURNEY SONG.","GOT A REQUEST?"], ()=>{ startSong(); });
+      say('POLKAMEISTERS', ["WELCOME TO THE STAGE! ACCORDION, CLARINET, TUBA, DRUMS - AND THE ACCORDION DOES THE SINGING.","WE KNOW 400 POLKAS AND ONE (1) JOURNEY SONG.","GOT A REQUEST?"], ()=>{ startSong(); });
     } else {
       chatter('POLKAMEISTERS', [
         "BACK FOR MORE? WHAT'LL IT BE?",
