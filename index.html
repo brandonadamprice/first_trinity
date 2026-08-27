@@ -668,6 +668,7 @@ const TASKS = [
  {id:'brat',    icon:'BRAT',     label:"GET A BRAT FROM THE GRILL"},
  {id:'stein',   icon:'STEIN',    label:"WIN THE STEIN HOLD"},
  {id:'axe',     icon:'AXE',      label:"HIT A BULLSEYE (AXE THROW)"},
+ {id:'corn',    icon:'BAG',      label:"SINK A CORNHOLE BAG (BEAT RUTH)"},
  {id:'balloon', icon:'BALLOON',  label:"GET A BALLOON DACHSHUND"},
  {id:'song',    icon:'SONG',     label:"REQUEST A POLKAMEISTERS SONG"},
  {id:'altar',   icon:'CHURCH',   label:"VISIT THE SANCTUARY ALTAR"},
@@ -832,8 +833,8 @@ function buildWorld(){
     });
     addSolid(x,y+2,40,10);
   }
-  interactable(38,8.5,1.5,'CRAFT BOOTH',()=>say('CRAFT BOOTH',["GLITTER. GOOGLY EYES. POPSICLE STICKS.","THE HOLY TRINITY OF CRAFTS."]));
-  interactable(42,8.5,1.5,'PLDM TABLE',()=>say('PLDM',["PITTSBURGH LUTHERAN DEAF MINISTRIES.","THEY TEACH YOU THE ASL SIGN FOR 'PRETZEL.'","YOUR DAY IS MEASURABLY BETTER NOW."]));
+  interactable(38,8.5,1.5,'CRAFT BOOTH',()=>say('CAITLYN',["HI, I'M CAITLYN! WELCOME TO CRAFTS!","GLITTER. GOOGLY EYES. POPSICLE STICKS.","THE HOLY TRINITY OF CRAFTS."]));
+  interactable(42,8.5,1.5,'PLDM TABLE',()=>say('DEBRA',["HI! I'M DEBRA, WITH PITTSBURGH","LUTHERAN DEAF MINISTRIES.","WANT TO LEARN THE SIGN FOR 'PRETZEL'?","...THERE YOU GO. YOUR DAY JUST IMPROVED."]));
   interactable(46,8.5,1.5,'GAMES BOOTH',()=>say('RING TOSS',["THE RINGS ARE PRETZEL-SHAPED.","NOBODY HAS EVER WON. IT'S PERFECT."]));
   // balloon stand
   (function(){ const x=48*TS, y=10*TS;
@@ -990,7 +991,7 @@ function buildWorld(){
   picnicTable(39,33.6); picnicTable(44.2,33.6);
   // rows of folding chairs facing the band (like the photo)
   (function(){
-    for (const [cx,cy] of [[52.4,39.35],[52.4,40.45]]){
+    for (const [cx,cy] of [[52.4,37.35],[52.4,38.45]]){
       const x=cx*TS, y=cy*TS;
       obj(x,y,y+10,(g)=>{
         for(let i=0;i<4;i++){
@@ -1003,7 +1004,7 @@ function buildWorld(){
     }
   })();
   // the POLKAMEISTERS: between the two rows of tables, right side, facing the people
-  (function(){ const x=56*TS, y=38.6*TS;
+  (function(){ const x=56*TS, y=36.6*TS;
     obj(x,y,y+60,(g)=>{
       g.fillStyle='#754b26'; g.fillRect(x,y+2,38,56);
       g.fillStyle='#8a5a30'; g.fillRect(x,y,38,4);
@@ -1022,7 +1023,7 @@ function buildWorld(){
     });
     addSolid(x,y+2,38,56);
   })();
-  interactable(55.4,40.5,2.2,'STAGE',()=>{
+  interactable(55.4,38.5,2.2,'STAGE',()=>{
     if (!done.song){
       say('POLKAMEISTERS', ["WE ARE THE PITTSBURGH POLKAMEISTERS!","WE KNOW 400 POLKAS","AND ONE (1) JOURNEY SONG.","GOT A REQUEST?"], ()=>{ startSong(); });
     } else {
@@ -1090,10 +1091,10 @@ function buildWorld(){
   })();
   interactable(52.5,27.8,1.9,'RECTORY',()=>say('RECTORY',
     ["THIS IS THE RECTORY. THE PASTOR REALLY LIVES HERE.","YES, THE BRATWURST SMOKE REACHES THE KITCHEN.","NO, YOU CANNOT SEE THE FRIDGE."]));
-  // picnic tables
-  picnicTable(44.2,38); picnicTable(48.5,38); picnicTable(53,38);
-  picnicTable(44.2,41.5); picnicTable(53,41.5);
-  interactable(49.5,39,1.4,'TABLE',()=>say('EDNA',["I'VE BEEN COMING SINCE 1962.","THE PRETZELS HAVE ONLY GOTTEN BIGGER.","SIT. EAT. YOU'RE TOO SKINNY."]));
+  // picnic tables (pulled up close to the tent so the big tree stands clear)
+  picnicTable(44.2,36); picnicTable(48.5,36); picnicTable(53,36);
+  picnicTable(44.2,39.5); picnicTable(53,39.5);
+  interactable(49.5,37.6,1.4,'TABLE',()=>say('EDNA',["I'VE BEEN COMING SINCE 1962.","THE PRETZELS HAVE ONLY GOTTEN BIGGER.","SIT. EAT. YOU'RE TOO SKINNY."]));
   // string lights over the plaza
   const p1 = stringPole(36,35), p2 = stringPole(46,35), p3 = stringPole(57,35);
   const p4 = stringPole(36,44), p5 = stringPole(46,44), p6 = stringPole(57,44);
@@ -1126,7 +1127,7 @@ function buildWorld(){
   car(30.5,1.6,'#b03a3a'); car(33.5,2.2,'#3b6ea8'); car(36.6,1.8,'#d9b23a');
   car(42.5,2.1,'#57b060'); car(45.6,1.7,'#8a4f9e'); car(51.5,2.3,'#e8e4da');
   car(10.5,1.8,'#3a3a44'); car(17.5,2.2,'#b3812c');
-  (function(){ const x=57*TS, y=37*TS;   // P sign pointing up the driveway
+  (function(){ const x=57.8*TS, y=42.5*TS;   // P sign pointing up the driveway
     obj(x,y,y+16,(g)=>{
       g.fillStyle='#6b4a2b'; g.fillRect(x+7,y+2,2,14);
       g.fillStyle='#2b6db0'; g.fillRect(x,y-8,16,10);
@@ -1134,7 +1135,7 @@ function buildWorld(){
     });
     addSolid(x+6,y+12,4,4);
   })();
-  interactable(57.4,37.5,1.6,'PARKING SIGN',()=>say('SIGN',["'PARKING: FOLLOW THE DRIVEWAY ALL THE WAY UP.'","'THE LOT IS BEHIND THE BUILDING.'","'TRUST THE SIGN. THE SIGN KNOWS.'"]));
+  interactable(58.2,43,1.6,'PARKING SIGN',()=>say('SIGN',["'PARKING: FOLLOW THE DRIVEWAY ALL THE WAY UP.'","'THE LOT IS BEHIND THE BUILDING.'","'TRUST THE SIGN. THE SIGN KNOWS.'"]));
   interactable(45,3,2.5,'PARKING LOT',()=>say('THE BACK LOT',["THE SECRET PARKING LOT BEHIND THE CHURCH.","ONLY LOCALS KNOW ABOUT IT.","...AND NOW YOU. WELCOME TO THE INNER CIRCLE."]));
 
   /* --- pumpkins scattered --- */
@@ -1153,8 +1154,8 @@ function buildWorld(){
   }
   stoneWall(4,46.3,8); stoneWall(17,46.3,19); stoneWall(36,46.3,6); stoneWall(44,46.3,15);
 
-  /* --- the big street tree in front of the rectory --- */
-  (function(){ const x=48*TS, y=41.2*TS;
+  /* --- the big street tree, on its own grass south of the biergarten --- */
+  (function(){ const x=48*TS, y=42.2*TS;
     obj(x,y,y+66,(g)=>{
       g.fillStyle='rgba(0,0,0,0.15)'; g.fillRect(x+12,y+58,40,8);
       g.fillStyle='#b3701e'; g.fillRect(x+26,y+40,12,24);
@@ -1205,7 +1206,7 @@ function buildWorld(){
     addSolid(x+2,y+10,28,6);
   })();
   interactable(20.5,33.2,1.6,'CHURCH SIGN',()=>say('CHURCH SIGN',
-    ["FIRST TRINITY EVANGELICAL LUTHERAN CHURCH","DIVINE SERVICE: SUNDAY 9:30 AM","TODAY'S MESSAGE:","'THE WURST IS YET TO COME.'"]));
+    ["FIRST TRINITY EVANGELICAL LUTHERAN CHURCH","DIVINE SERVICE: SUNDAY 11:00 AM","TODAY'S MESSAGE:","'THE WURST IS YET TO COME.'"]));
   cornStalk(41.3,17.2); cornStalk(43.4,17.1);
 
   /* --- red velvet rope queue along the path to the food line --- */
@@ -1247,7 +1248,7 @@ function buildWorld(){
     });
   })();
   interactable(6.6,33.2,1.9,'CORNHOLE',()=>{
-    say('RUTH', ["CORNHOLE! I'M RUTH. REIGNING CHAMPION.","THE OFFICIAL SPORT OF WAITING FOR BRATS.","STOP THE MARKER DEAD CENTER","TO SINK THE BAG!"], ()=>{ startCorn(); });
+    say('RUTH', ["CORNHOLE! I'M RUTH. REIGNING CHAMPION.","THE OFFICIAL SPORT OF WAITING FOR BRATS.","SET YOUR POWER, THEN YOUR AIM.","SINK ONE AND I'LL BE IMPRESSED."], ()=>{ startCorn(); });
   });
 
   /* --- lamp posts on the lawn --- */
@@ -1275,7 +1276,7 @@ function buildWorld(){
     });
     addSolid(x,y+2,22,11);
   }
-  bins(40.3,21.4); bins(55.4,36.3);
+  bins(40.3,21.4); bins(38,30.5);
 
   /* --- PA speakers on tripods by the stage --- */
   function paSpeaker(tx,ty){
@@ -1288,7 +1289,7 @@ function buildWorld(){
     });
     addSolid(x+2,y+14,10,6);
   }
-  paSpeaker(55.5,37.2); paSpeaker(55.5,43);
+  paSpeaker(55.5,35.2); paSpeaker(55.5,41);
 
   /* --- Officer Dan, keeping the peace from a folding chair --- */
   (function(){ const x=32.9*TS, y=26.9*TS;
@@ -1307,6 +1308,8 @@ function buildWorld(){
   npc(19,39.5,{name:'AXEL', shirt:'#b03a3a', pants:'#3a3a44', hair:'#c9542f', wander:8,
     lines:["RULE ONE: THROW THE AXE AT THE TARGET.","RULE TWO: ONLY AT THE TARGET.","THERE ARE NO OTHER RULES."]});
   npc(7.5,31.8,{name:'RUTH', dress:'#8a4f9e', hat:'braid', hair:'#c9c2b2', still:true});
+  npc(38.2,7.1,{name:'CAITLYN', shirt:'#8a4f9e', pants:'#3a3a44', hair:'#6b4a2b', still:true});
+  npc(42.2,7.1,{name:'DEBRA', dress:'#2b6db0', hat:'braid', hair:'#241d16', still:true});
   npc(49.5,11,{name:'DOODLES', hat:'puff', shirt:'#c17ad4', pants:'#e8d24a', nose:'#d94f4f', still:true});
   npc(6.8,39.4,{name:'MARGE', dress:'#2b7a78', hair:'#9a9a9a', hat:'braid', still:true});
   npc(46,40.5,{name:'CHUCK', shirt:'#241d16', pants:'#d9b23a', hat:'cap', hatColor:'#241d16', wander:30,
@@ -1363,7 +1366,7 @@ const smoke = [];
 let axeState = null, axeStuck = false;
 function startAxe(){ state='axe'; axeState = {t:0, ph:rr(0,6), result:null, resT:0, axeFly:0}; }
 let cornState = null;
-function startCorn(){ state='corn'; cornState = {t:0, ph:rr(0,6), result:null, resT:0}; }
+function startCorn(){ state='corn'; cornState = {phase:'power', t:0, ph:rr(0,6), power:null, aim:null, result:null, resT:0, fly:0}; }
 let steinState = null;
 function startStein(){ state='stein'; steinState = {meter:30, time:6.0, doneFlag:null}; }
 let songState = null;
@@ -1504,7 +1507,7 @@ function update(dt){
     if (l.y > MH*TS){ l.y = -8; l.x = rr(0,MW*TS); }
   }
   if (musicOn && Math.random()<dt*3){
-    notes.push({x:56.5*TS+rr(-20,20), y:39.5*TS+rr(-20,20), t:0});
+    notes.push({x:56.5*TS+rr(-20,20), y:37.5*TS+rr(-20,20), t:0});
   }
   for (let i=notes.length-1;i>=0;i--){ const n=notes[i]; n.t+=dt; n.y-=dt*18; n.x+=Math.sin(n.t*5)*0.5; if(n.t>2)notes.splice(i,1); }
   if (Math.random()<dt*4) smoke.push({x:50.6*TS+rr(0,20), y:17.8*TS, t:0});
@@ -1544,13 +1547,27 @@ function updateAxe(dt){
 }
 function updateCorn(dt){
   const c = cornState;
-  if (c.result===null){
-    c.t += dt;
-    if (interactPressed){
-      interactPressed=false;
-      const v = Math.sin(c.t*2.9 + c.ph);
-      c.hit = v; c.result = Math.abs(v)<0.16 ? 'hole' : (Math.abs(v)<0.55?'board':'grass');
-      c.resT = 0; sfx(c.result==='hole'?'tada':'thunk');
+  c.t += dt;
+  if (c.phase==='power'){
+    if (interactPressed){ interactPressed=false;
+      c.power = 50 + 50*Math.sin(c.t*3.4 + c.ph);
+      c.phase='aim'; c.t=0; c.ph=rr(0,6); sfx('blip');
+    }
+  } else if (c.phase==='aim'){
+    if (interactPressed){ interactPressed=false;
+      c.aim = Math.sin(c.t*2.6 + c.ph);
+      c.phase='fly'; c.fly=0; sfx('thunk');
+    }
+  } else if (c.phase==='fly'){
+    c.fly += dt;
+    if (c.fly>=0.55){
+      const goodPower = c.power>=52 && c.power<=82;
+      if (goodPower && Math.abs(c.aim)<0.18){ c.result='hole'; sfx('tada'); }
+      else if (goodPower && Math.abs(c.aim)<0.55) c.result='board';
+      else if (c.power<52) c.result='short';
+      else if (c.power>82) c.result='long';
+      else c.result='wide';
+      c.phase='done'; c.resT=0;
     }
   } else {
     c.resT += dt;
@@ -1558,11 +1575,16 @@ function updateCorn(dt){
       interactPressed=false;
       if (c.result==='hole'){
         state='play'; cornState=null;
+        completeTask('corn');
         say('RUTH',["IN THE HOLE! CLUNK.","RUTH RAISES ONE EYEBROW.","THAT IS THE HIGHEST HONOR SHE GIVES."]);
       } else if (c.result==='board'){
         say('RUTH',["ON THE BOARD. IT SLID... AND STAYED.","'NOT BAD, SWEETIE.' - RUTH","AGAIN!"], ()=>startCorn());
+      } else if (c.result==='short'){
+        say('RUTH',["PLOP. RIGHT IN FRONT OF THE BOARD.","'MORE ARM, SWEETIE.' - RUTH"], ()=>startCorn());
+      } else if (c.result==='long'){
+        say('RUTH',["IT SAILED CLEAN OVER THE BOARD.","RUTH DUCKED. SHE DID NOT HAVE TO.","SHE DID IT FOR DRAMA."], ()=>startCorn());
       } else {
-        say('RUTH',["STRAIGHT INTO THE GRASS.","RUTH PATS THE BENCH BESIDE HER.","'WE ALL START SOMEWHERE.' AGAIN!"], ()=>startCorn());
+        say('RUTH',["WIDE. VERY WIDE.","A SQUIRREL IS NOW INVESTIGATING IT."], ()=>startCorn());
       }
     }
   }
@@ -1598,7 +1620,7 @@ function updateSong(dt){
     completeTask('song');
     if (!musicOn) toggleMusic();
     setSong(['barrel','chicken','journey'][s.sel]);
-    for(let i=0;i<10;i++) notes.push({x:56.3*TS+rr(-25,25), y:39.5*TS+rr(-20,20), t:rr(0,-0.5)});
+    for(let i=0;i<10;i++) notes.push({x:56.3*TS+rr(-25,25), y:37.5*TS+rr(-20,20), t:rr(0,-0.5)});
     say('POLKAMEISTERS', ["'"+SONGS[s.sel]+"' COMIN' RIGHT UP!","A-EINS! A-ZWEI! A-TUBA!"]);
   }
 }
@@ -1714,14 +1736,14 @@ function drawDialog(){
 function drawCard(){
   panel(60, 18, VW-120, VH-36, 'FESTKARTE - QUESTS');
   for (let i=0;i<TASKS.length;i++){
-    const t = TASKS[i], y = 42 + i*23;
+    const t = TASKS[i], y = 42 + i*21;
     CTX.fillStyle = done[t.id]?'#57b060':'#5a5248';
     CTX.fillRect(76, y, 12, 12);
     CTX.fillStyle='#0f1621'; CTX.fillRect(78, y+2, 8, 8);
     if (done[t.id]) drawText('^', 76, y+2, 1, '#7bde8e');
     drawText(t.label, 96, y+2, 1, done[t.id]?'#7bde8e':'#f4e9c8');
   }
-  drawText(tasksDone()===TASKS.length?'ALLE NEUNE! PROST!':'EXPLORE THE FEST TO FINISH THEM ALL!', VW/2, VH-54, 1, '#e8d24a','center');
+  drawText(tasksDone()===TASKS.length?'ZEHN VON ZEHN! PROST!':'EXPLORE THE FEST TO FINISH THEM ALL!', VW/2, VH-54, 1, '#e8d24a','center');
   drawText(isTouch?'TAP A TO CLOSE':'E / TAB TO CLOSE', VW/2, VH-40, 1, '#8fa3bf','center');
 }
 
@@ -1752,28 +1774,46 @@ function drawAxe(){
 }
 
 function drawCorn(){
-  panel(70, 40, VW-140, 200, 'CORNHOLE');
+  panel(70, 26, VW-140, 228, 'CORNHOLE');
   const c = cornState;
-  const bx = VW/2, by = 108;
-  // the board, seen from the throwing end
-  CTX.fillStyle='#c99548'; CTX.fillRect(bx-34, by-26, 68, 52);
-  CTX.fillStyle='#b3812c'; CTX.fillRect(bx-34, by+22, 68, 4);
-  CTX.fillStyle='#241d16'; CTX.fillRect(bx-8, by-18, 16, 12);
-  const v = c.result===null ? Math.sin(c.t*2.9+c.ph) : c.hit;
-  // marker bar
-  CTX.fillStyle='#0f1621'; CTX.fillRect(bx-70, 176, 140, 14);
-  CTX.fillStyle='#57b060'; CTX.fillRect(bx-12, 176, 24, 14);
-  CTX.fillStyle='#e8d24a'; CTX.fillRect(bx + v*62 - 2, 174, 4, 18);
-  if (c.result!==null){
-    const px = bx + v*40;
-    const py = c.result==='hole' ? by-12 : (c.result==='board' ? by+8 : by+42);
+  const bx = VW/2, by = 96;
+  // lawn + the board, seen from the throwing end
+  CTX.fillStyle='#3f5e38'; CTX.fillRect(bx-84, by-44, 168, 130);
+  CTX.fillStyle='#c99548'; CTX.fillRect(bx-30, by-30, 60, 46);
+  CTX.fillStyle='#b3812c'; CTX.fillRect(bx-30, by+12, 60, 4);
+  CTX.fillStyle='#241d16'; CTX.fillRect(bx-7, by-22, 14, 11);
+  // power bar (vertical, left)
+  const pv = c.phase==='power' ? 50+50*Math.sin(c.t*3.4+c.ph) : c.power;
+  CTX.fillStyle='#0f1621'; CTX.fillRect(88, 56, 12, 130);
+  CTX.fillStyle='#57b060'; CTX.fillRect(88, 56+130-Math.round(0.82*130), 12, Math.round(0.30*130));
+  CTX.fillStyle='#e8d24a'; CTX.fillRect(85, 56+130-(pv/100)*130-2, 18, 4);
+  drawText('POWER', 94, 192, 1, '#8fa3bf','center');
+  // aim bar (horizontal, bottom)
+  if (c.phase!=='power'){
+    const av = c.phase==='aim' ? Math.sin(c.t*2.6+c.ph) : (c.aim||0);
+    CTX.fillStyle='#0f1621'; CTX.fillRect(bx-70, 204, 140, 12);
+    CTX.fillStyle='#57b060'; CTX.fillRect(bx-12, 204, 24, 12);
+    CTX.fillStyle='#e8d24a'; CTX.fillRect(bx + av*62 - 2, 202, 4, 16);
+  }
+  // the bag in flight / landed
+  if (c.phase==='fly' || c.phase==='done'){
+    const t = c.phase==='fly' ? Math.min(1, c.fly/0.55) : 1;
+    const targetX = bx + c.aim*46;
+    let targetY;
+    if (c.power<52) targetY = by+36;
+    else if (c.power>82) targetY = by-40;
+    else targetY = (c.phase==='done' && c.result==='hole') ? by-16 : by+2;
+    const px = bx + (targetX-bx)*t;
+    const py = 196 + (targetY-196)*t - Math.sin(t*Math.PI)*44;
     CTX.fillStyle='#e8d24a'; CTX.fillRect(px-4, py-4, 9, 9);
     CTX.fillStyle='#c9a43a'; CTX.fillRect(px-4, py+2, 9, 3);
-    const msg = c.result==='hole'?'IN THE HOLE!!':(c.result==='board'?'ON THE BOARD!':'INTO THE GRASS');
-    drawText(msg, VW/2, 200, 1, c.result==='hole'?'#7bde8e':'#e8d24a', 'center');
-    if (c.resT>0.7) drawText(isTouch?'TAP A':'PRESS E', VW/2, 216, 1, '#8fa3bf','center');
-  } else {
-    drawText(isTouch?'TAP A AT DEAD CENTER!':'PRESS E AT DEAD CENTER!', VW/2, 200, 1, '#f4e9c8','center');
+  }
+  if (c.phase==='power') drawText(isTouch?'TAP A TO SET POWER!':'PRESS E TO SET POWER!', VW/2, 226, 1, '#f4e9c8','center');
+  else if (c.phase==='aim') drawText(isTouch?'TAP A TO SET AIM!':'PRESS E TO SET AIM!', VW/2, 226, 1, '#f4e9c8','center');
+  else if (c.phase==='done'){
+    const msgs = {hole:'IN THE HOLE!!', board:'ON THE BOARD!', short:'TOO SHORT!', long:'TOO STRONG!', wide:'WAY WIDE!'};
+    drawText(msgs[c.result], VW/2, 226, 1, c.result==='hole'?'#7bde8e':'#e8d24a', 'center');
+    if (c.resT>0.7) drawText(isTouch?'TAP A':'PRESS E', VW/2, 240, 1, '#8fa3bf','center');
   }
 }
 
@@ -1810,9 +1850,9 @@ function drawSong(){
 
 function drawWin(){
   updateConfettiDraw();
-  panel(50, 70, VW-100, 170, 'ALLE NEUNE!');
+  panel(50, 70, VW-100, 170, 'ZEHN VON ZEHN!');
   drawText('YOU DID EVERYTHING AT OKTOBERFEST!', VW/2, 104, 1, '#f4e9c8','center');
-  drawText('PRETZELS EATEN. AXES THROWN.', VW/2, 122, 1, '#f4e9c8','center');
+  drawText('PRETZELS EATEN. AXES THROWN. BAGS SUNK.', VW/2, 122, 1, '#f4e9c8','center');
   drawText('RESTROOMS DISCOVERED. DOGS PETTED.', VW/2, 136, 1, '#f4e9c8','center');
   drawText('YOU ARE AN', VW/2, 160, 1, '#f4e9c8','center');
   drawText('OKTOBERFEST LEGEND', VW/2, 174, 2, '#e8d24a','center');
@@ -1985,7 +2025,12 @@ buildWorld();
 window.__tp = (tx,ty)=>{ player.x=tx*TS; player.y=ty*TS; };
 window.__state = ()=>state;
 window.__axe = ()=> axeState && axeState.result===null ? Math.sin(axeState.t*3.1+axeState.ph) : null;
-window.__corn = ()=> cornState && cornState.result===null ? Math.sin(cornState.t*2.9+cornState.ph) : null;
+window.__corn = ()=>{
+  if (!cornState) return null;
+  if (cornState.phase==='power') return {phase:'power', v: 50+50*Math.sin(cornState.t*3.4+cornState.ph)};
+  if (cornState.phase==='aim') return {phase:'aim', v: Math.sin(cornState.t*2.6+cornState.ph)};
+  return {phase: cornState.phase};
+};
 window.__dog = ()=>({x:dog.x, y:dog.y});
 window.__tasks = ()=>TASKS.map(t=>t.id+':'+done[t.id]).join(',');
 function frame(t){
