@@ -9,7 +9,8 @@ organ loft above it), one walkway leading up into the fellowship hallway — the
 Kid's Center + booths (Caitlyn at crafts, Debra at the PLDM table, and Lily,
 Danielle and Hallie running the place) are entered from the side through it —
 the PALM and LSF ministry tents (with Brandon and Pastor Andrae), the axe
-throw with Alex, cornhole with Kristi, Mirka's food line beside the rectory,
+throw with Alex, cornhole with Kristi, Mirka's serving row up against the
+rectory wall (you join at the south end and walk the line),
 David grilling out back, Terry at the info tent, the back parking lot
 connecting both driveways, and the Biergarten — where Mike, Cindy and Norm
 hold down the tables and the Pittsburgh PolkaMeisters play facing the crowd.
