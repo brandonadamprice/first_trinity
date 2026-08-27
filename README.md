@@ -106,6 +106,13 @@ touch controls on phones/tablets.
   everything above `y+12`. Kids (`kid:true`) use `drawKid()` — the same build
   four rows shorter with a full-size head, which is what reads as "child" at
   this scale; `small:true` takes another row off for the three-year-olds.
+- The wooden QR sign opens a real, scannable QR code for
+  <https://www.firsttrinity.net/oktoberfest>. The 29×29 module matrix (version
+  3-M) is generated once and baked in as data rather than encoded at runtime,
+  so the file stays dependency-free. It draws dark-on-light with the 4-module
+  quiet zone the spec wants — invert it or crop the margin and phones stop
+  reading it. `image-rendering: pixelated` keeps the modules crisp at any
+  display scale.
 - The bitmap font is ASCII plus `Ë`, whose E is squashed to six rows to fit the
   diaeresis. `drawText` silently skips glyphs it doesn't have, so a new
   character's name needs a glyph before it will render.

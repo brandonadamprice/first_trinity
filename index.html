@@ -161,6 +161,42 @@ const FONT = {
 ']':["00000","01110","01110","01010","01110","01110","00000"], /* nothing */
 '^':["00001","00010","10100","11000","10000","00000","00000"], /* check */
 };
+/* Real scannable QR for the fest page. Version 3-M, 29x29 modules,
+   generated once and baked in - encoding it at runtime would mean
+   shipping a QR encoder for one fixed URL. */
+const QR_URL = "https://www.firsttrinity.net/oktoberfest";
+const QR_TEXT = "FIRSTTRINITY.NET/OKTOBERFEST";
+const QR = [
+  "11111110111100001001101111111",
+  "10000010101011000110001000001",
+  "10111010011101011001001011101",
+  "10111010100011111101001011101",
+  "10111010010110111011001011101",
+  "10000010000011100001001000001",
+  "11111110101010101010101111111",
+  "00000000111010001111000000000",
+  "10110111000100101100001001011",
+  "01111001101110101111111110001",
+  "11110111111111100010010110110",
+  "10101101001111111001000110001",
+  "00011010010101110101000001100",
+  "10000100101110011001001100111",
+  "11101011001111100111000110111",
+  "10100000000100001011000110010",
+  "01001111011100110010010011010",
+  "01010000011101010000110101110",
+  "10110111100010010000010100100",
+  "00100101000000101110001000100",
+  "01001011101111000111111111100",
+  "00000000101001001001100011111",
+  "11111110101111001111101011010",
+  "10000010100010011000100011001",
+  "10111010010100100110111110111",
+  "10111010101111111000110011001",
+  "10111010110110100110010100101",
+  "10000010011000001001110101010",
+  "11111110101011110011111001010"];
+
 function drawText(str, x, y, scale, color, align){
   str = String(str).toUpperCase();
   const cw = 6*scale;
@@ -856,7 +892,7 @@ function paginate(phrases, cols){
 }
 function pageLen(page){ let n=0; for (const l of page) n += l.length; return n; }
 
-let state = 'title';   // title | play | dialog | axe | corn | stein | song | card | win
+let state = 'title';   // title | play | dialog | axe | corn | stein | song | card | qr | win
 let dialog = null;     // {name, phrases, pages:[[line,..],..], cols, idx, chars, onDone}
 function say(name, phrases, onDone){
   state = 'dialog';
@@ -1169,7 +1205,13 @@ function buildWorld(){
     });
     addSolid(x+4,y+10,4,6);
   })();
-  interactable(10.5,39.5,1.4,'QR SIGN',()=>say('QR CODE',["YOU SCAN THE WOODEN QR CODE. IT JUST LEADS TO MORE OKTOBERFEST.","INCREDIBLE. NO NOTES."]));
+  interactable(10.5,39.5,1.4,'QR SIGN',()=>{
+    if (!met.qr){ met.qr = true;
+      say('QR CODE',["YOU SCAN THE WOODEN QR CODE. IT JUST LEADS TO MORE OKTOBERFEST.",
+        "INCREDIBLE. NO NOTES.",
+        "THIS ONE IS REAL, BY THE WAY. POINT A PHONE AT IT."], ()=>{ startQR(); });
+    } else startQR();
+  });
   (function(){ const x=1.2*TS, y=43.8*TS;  // EXIT sign over the west driveway
     obj(x,y,y+14,(g)=>{
       g.fillStyle='#6b4a2b'; g.fillRect(x+2,y+4,2,10); g.fillRect(x+40,y+4,2,10);
@@ -1708,6 +1750,7 @@ function update(dt){
     return;
   }
   if (state==='card'){ if (interactPressed){ interactPressed=false; state='play'; } return; }
+  if (state==='qr'){ if (interactPressed){ interactPressed=false; state='play'; } return; }
   if (state==='axe'){ updateAxe(dt); return; }
   if (state==='corn'){ updateCorn(dt); return; }
   if (state==='stein'){ updateStein(dt); return; }
@@ -1978,6 +2021,7 @@ function draw(){
 
   if (state==='dialog') drawDialog();
   if (state==='card') drawCard();
+  if (state==='qr') drawQRPanel();
   if (state==='axe') drawAxe();
   if (state==='corn') drawCorn();
   if (state==='stein') drawStein();
@@ -2049,6 +2093,25 @@ function drawDialog(){
              isTouch?'center':undefined);
 }
 
+function startQR(){ state='qr'; sfx('ok'); }
+/* Draws the code big enough to actually scan off the screen: dark modules on a
+   light field, with the 4-module quiet zone the spec wants - an inverted code,
+   or one butted against the dark panel, will not read on most phones. */
+function drawQRPanel(){
+  const n = QR.length, QZ = 4, total = n + QZ*2;
+  const s  = Math.max(2, Math.min(6, Math.floor(Math.min(VW-56, VH-116)/total)));
+  const side = total*s;
+  const pw = Math.max(side+28, 210), ph = side + 66;
+  const px = Math.round((VW-pw)/2), py = Math.round((VH-ph)/2);
+  panel(px, py, pw, ph, 'FIRST TRINITY OKTOBERFEST');
+  const qx = px + Math.round((pw-side)/2), qy = py + 22;
+  CTX.fillStyle = '#ffffff'; CTX.fillRect(qx, qy, side, side);   // field + quiet zone
+  CTX.fillStyle = '#000000';
+  for (let y=0;y<n;y++) for (let x=0;x<n;x++)
+    if (QR[y][x]==='1') CTX.fillRect(qx+(x+QZ)*s, qy+(y+QZ)*s, s, s);
+  drawText(QR_TEXT, VW/2, qy+side+7, 1, '#f4e9c8', 'center');
+  drawText(isTouch?'TAP A TO CLOSE':'E TO CLOSE', VW/2, qy+side+21, 1, '#8fa3bf', 'center');
+}
 function drawCard(){
   const px = VW >= 440 ? 60 : 16, ch = Math.min(VH-36, 284), cb = 18 + ch;
   panel(px, 18, VW-px*2, ch, 'FESTKARTE - QUESTS');
