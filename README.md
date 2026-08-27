@@ -30,6 +30,10 @@ embedded in a website.
 | Quest list    | Tab / C               | ☰ QUESTS       |
 | Music on/off  | M                     | ♪ button       |
 
+On touch screens the game fills the display, the controls scale up for
+thumbs, and the D-pad is slideable — drag toward a corner to walk
+diagonally.
+
 ### The Festkarte (quest list)
 
 Ten very important festival achievements:
