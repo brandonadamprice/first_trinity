@@ -8,6 +8,7 @@
   html,body{margin:0;padding:0;background:#1b2431;height:100%;overflow:hidden;
     font-family:monospace;-webkit-user-select:none;user-select:none;touch-action:none;}
   #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;}
+  body.portrait #wrap{align-items:flex-start;padding-top:calc(60px + env(safe-area-inset-top,0px));}
   canvas{image-rendering:pixelated;image-rendering:crisp-edges;background:#000;}
   #topBtns{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));
     right:calc(8px + env(safe-area-inset-right,0px));z-index:5;display:flex;gap:8px;}
@@ -56,7 +57,7 @@
 const CVS = document.getElementById('game');
 const CTX = CVS.getContext('2d');
 CTX.imageSmoothingEnabled = false;
-const VW = 480, VH = 320;      // internal resolution
+let VW = 480, VH = 320;        // internal resolution (portrait phones use 360 x dynamic)
 const TS = 16;                 // tile size
 const MW = 64, MH = 52;        // map size in tiles
 
@@ -64,10 +65,27 @@ const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
 
 function fitCanvas(){
   const w = window.innerWidth, h = window.innerHeight;
-  let s = Math.min(w / VW, h / VH);
-  // Desktop snaps to whole-number scales for perfectly square pixels;
-  // on touch screens filling the display matters more than exact pixels.
-  if (!isTouch && s > 1) s = Math.max(1, Math.floor(s));
+  const portrait = isTouch && h > w;
+  let newVW, newVH, s;
+  if (portrait){
+    // Game Boy layout: narrower view (bigger sprites) pinned below the top
+    // buttons, with the space underneath reserved for the touch controls.
+    newVW = w < 600 ? 360 : 480;
+    s = w / newVW;
+    newVH = clamp(Math.round((h - 300) / s), 320, 560);
+  } else {
+    newVW = 480; newVH = 320;
+    s = Math.min(w / newVW, h / newVH);
+    // Desktop snaps to whole-number scales for perfectly square pixels;
+    // on touch screens filling the display matters more than exact pixels.
+    if (!isTouch && s > 1) s = Math.max(1, Math.floor(s));
+  }
+  if (newVW !== VW || newVH !== VH){
+    VW = newVW; VH = newVH;
+    CVS.width = VW; CVS.height = VH;
+    CTX.imageSmoothingEnabled = false;   // canvas resize resets context state
+  }
+  document.body.classList.toggle('portrait', portrait);
   CVS.style.width  = (VW * s) + 'px';
   CVS.style.height = (VH * s) + 'px';
 }
@@ -1771,23 +1789,36 @@ function drawDialog(){
   const line = dialog.lines[dialog.idx];
   const shown = line.slice(0, dialog.chars|0);
   panel(14, VH-76, VW-28, 64, dialog.name);
-  drawText(shown, 26, VH-52, 1, '#f4e9c8');
+  const maxC = Math.floor((VW-52)/6);
+  let brk = -1;
+  if (line.length > maxC){
+    brk = line.lastIndexOf(' ', maxC);
+    if (brk < 1) brk = maxC;
+  }
+  if (brk > 0){
+    drawText(shown.slice(0, brk), 26, VH-58, 1, '#f4e9c8');
+    const skip = line[brk]===' ' ? brk+1 : brk;
+    if (shown.length > skip) drawText(shown.slice(skip), 26, VH-46, 1, '#f4e9c8');
+  } else {
+    drawText(shown, 26, VH-52, 1, '#f4e9c8');
+  }
   if ((dialog.chars|0)>=line.length && (playT*2|0)%2===0)
     drawText(isTouch?'TAP A':'E', isTouch?VW/2:VW-52, VH-24, 1, '#e8d24a', isTouch?'center':undefined);
 }
 
 function drawCard(){
-  panel(60, 18, VW-120, VH-36, 'FESTKARTE - QUESTS');
+  const px = VW >= 440 ? 60 : 16, ch = Math.min(VH-36, 284), cb = 18 + ch;
+  panel(px, 18, VW-px*2, ch, 'FESTKARTE - QUESTS');
   for (let i=0;i<TASKS.length;i++){
     const t = TASKS[i], y = 42 + i*21;
     CTX.fillStyle = done[t.id]?'#57b060':'#5a5248';
-    CTX.fillRect(76, y, 12, 12);
-    CTX.fillStyle='#0f1621'; CTX.fillRect(78, y+2, 8, 8);
-    if (done[t.id]) drawText('^', 76, y+2, 1, '#7bde8e');
-    drawText(t.label, 96, y+2, 1, done[t.id]?'#7bde8e':'#f4e9c8');
+    CTX.fillRect(px+16, y, 12, 12);
+    CTX.fillStyle='#0f1621'; CTX.fillRect(px+18, y+2, 8, 8);
+    if (done[t.id]) drawText('^', px+16, y+2, 1, '#7bde8e');
+    drawText(t.label, px+36, y+2, 1, done[t.id]?'#7bde8e':'#f4e9c8');
   }
-  drawText(tasksDone()===TASKS.length?'ZEHN VON ZEHN! PROST!':'EXPLORE THE FEST TO FINISH THEM ALL!', VW/2, VH-54, 1, '#e8d24a','center');
-  drawText(isTouch?'TAP A TO CLOSE':'E / TAB TO CLOSE', VW/2, VH-40, 1, '#8fa3bf','center');
+  drawText(tasksDone()===TASKS.length?'ZEHN VON ZEHN! PROST!':'EXPLORE THE FEST TO FINISH THEM ALL!', VW/2, cb-36, 1, '#e8d24a','center');
+  drawText(isTouch?'TAP A TO CLOSE':'E / TAB TO CLOSE', VW/2, cb-22, 1, '#8fa3bf','center');
 }
 
 function drawAxe(){
@@ -1910,7 +1941,8 @@ function updateConfettiDraw(){
 function drawTitle(){
   // paper
   CTX.fillStyle='#efe8d8'; CTX.fillRect(0,0,VW,VH);
-  CTX.save(); CTX.translate(36,46); CTX.scale(0.9,0.9);
+  const fs = 0.9*VW/480;
+  CTX.save(); CTX.translate(36*VW/480,46); CTX.scale(fs,fs);
   drawFacade(CTX);
   CTX.restore();
   // paper bands so the text stays readable over the sketch
