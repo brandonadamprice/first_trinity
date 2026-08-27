@@ -70,3 +70,10 @@ touch controls on phones/tablets.
   (on by default after your first input; toggle with M or the ♪ button —
   four tunes total, three of them requestable from the band).
 - Text is rendered with a built-in 5×7 pixel bitmap font.
+- Dialogue is authored as **phrases** — one phrase is one complete thought,
+  written out in full rather than hand-broken into display lines. At talk time
+  each phrase is word-wrapped to the box and packed into pages of `DLG_ROWS`
+  lines, and the box resizes to fit the page, so a long thought fills the box
+  and a short one doesn't leave it half empty. A new phrase always starts a new
+  box — that's how a punchline keeps its own beat. Put `\n` inside a phrase to
+  force a break (signs and the noticeboard use this).

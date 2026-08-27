@@ -688,11 +688,51 @@ function completeTask(id){
 function tasksDone(){ return TASKS.filter(t=>done[t.id]).length; }
 
 /* ============================================================== DIALOG */
+/* Dialogue is authored as PHRASES: one phrase is one complete thought, as long
+   as it needs to be. At talk time each phrase is word-wrapped to the box and
+   packed into pages of DLG_ROWS lines, so a long thought fills the box instead
+   of trickling out one stubby line per keypress. Separate phrases still get
+   separate boxes - that is how a punchline keeps its own beat. Use \n inside a
+   phrase to force a break (signs, quoted notices). */
+const DLG_COLS = 70;   // characters that fit across the box
+const DLG_ROWS = 3;    // lines the box shows at once
+const DLG_CPS  = 92;   // typewriter speed, characters per second
+
+function wrapPhrase(str, cols){
+  const out = [];
+  for (const para of String(str).split('\n')){
+    const words = para.split(/\s+/).filter(Boolean);
+    if (!words.length){ out.push(''); continue; }      // deliberate blank line
+    let line = '';
+    for (let word of words){
+      while (word.length > cols){                      // word wider than the box
+        if (line){ out.push(line); line = ''; }
+        out.push(word.slice(0, cols)); word = word.slice(cols);
+      }
+      if (!line) line = word;
+      else if (line.length + 1 + word.length <= cols) line += ' ' + word;
+      else { out.push(line); line = word; }
+    }
+    if (line) out.push(line);
+  }
+  return out;
+}
+/* phrases -> pages; a page is up to DLG_ROWS wrapped lines shown together */
+function paginate(phrases){
+  const pages = [];
+  for (const ph of phrases){
+    const lines = wrapPhrase(ph, DLG_COLS);
+    for (let i=0;i<lines.length;i+=DLG_ROWS) pages.push(lines.slice(i, i+DLG_ROWS));
+  }
+  return pages.length ? pages : [['']];
+}
+function pageLen(page){ let n=0; for (const l of page) n += l.length; return n; }
+
 let state = 'title';   // title | play | dialog | axe | corn | stein | song | card | win
-let dialog = null;     // {name, lines:[], idx, chars}
-function say(name, lines, onDone){
+let dialog = null;     // {name, pages:[[line,..],..], idx, chars, onDone}
+function say(name, phrases, onDone){
   state = 'dialog';
-  dialog = {name, lines:Array.isArray(lines)?lines:[lines], idx:0, chars:0, onDone};
+  dialog = {name, pages:paginate(Array.isArray(phrases)?phrases:[phrases]), idx:0, chars:0, onDone};
   sfx('blip');
 }
 function interactable(tx,ty,r,name,action){
@@ -718,8 +758,8 @@ function buildWorld(){
   })();
   interactable(13.9,8,1.6,'ALTAR',()=>{
     completeTask('altar');
-    say('SANCTUARY', ["SUNBEAMS DRIFT THROUGH THE STAINED GLASS.",
-      "EVEN THE TUBA OUTSIDE GOES QUIET FOR A SECOND.", "...OK IT'S BACK."]);
+    say('SANCTUARY', ["SUNBEAMS DRIFT THROUGH THE STAINED GLASS. EVEN THE TUBA OUTSIDE GOES QUIET FOR A SECOND.",
+      "...OK IT'S BACK."]);
   });
   // stairway up to the organ loft (the organ itself is upstairs, out of view)
   (function(){ const x=5*TS+2, y=27.6*TS;
@@ -731,7 +771,8 @@ function buildWorld(){
     addSolid(x-2,y,18,18);
   })();
   interactable(5.8,28.4,1.5,'ORGAN LOFT',()=>say('ORGAN LOFT',
-    ["STAIRS UP TO THE ORGAN LOFT","ABOVE THE NARTHEX.","THE PIPE ORGAN LIVES UP THERE.","ON SUNDAYS IT MAKES THE FLOOR HUM.","(NO PLAYING IT. ONE NOTE AND","SUDDENLY IT'S A WHOLE THING.)"]));
+    ["STAIRS UP TO THE ORGAN LOFT ABOVE THE NARTHEX. THE PIPE ORGAN LIVES UP THERE. ON SUNDAYS IT MAKES THE FLOOR HUM.",
+     "(NO PLAYING IT. ONE NOTE AND SUDDENLY IT'S A WHOLE THING.)"]));
   // pews
   for (let r=0;r<8;r++){
     const y=(13+r*2)*TS;
@@ -745,7 +786,7 @@ function buildWorld(){
       addSolid(x,y,w*TS,8);
     });
   }
-  interactable(8,17,1.2,'PEW',()=>say('PEW',["SOMEONE LEFT A BULLETIN HERE.","SERMON TITLE: 'GOOD NEWS AND GOOD BREWS.'"]));
+  interactable(8,17,1.2,'PEW',()=>say('PEW',["SOMEONE LEFT A BULLETIN HERE. SERMON TITLE: 'GOOD NEWS AND GOOD BREWS.'"]));
   // OPEN sign at church door
   (function(){ const x=15.4*TS, y=30.6*TS;
     obj(x,y,y+14,(g)=>{
@@ -756,10 +797,10 @@ function buildWorld(){
     });
     addSolid(x+4,y+10,4,4);
   })();
-  interactable(15.7,31,1.2,'SIGN',()=>say('SIGN',["'SANCTUARY OPEN - COME LOOK AROUND!'","'NO STEINS INSIDE PLEASE. WE LOVE YOU. - THE PASTOR'"]));
+  interactable(15.7,31,1.2,'SIGN',()=>say('SIGN',["'SANCTUARY OPEN - COME LOOK AROUND!'\n'NO STEINS INSIDE PLEASE. WE LOVE YOU. - THE PASTOR'"]));
 
   /* --- restroom doors (the legendary trio) --- */
-  function wcDoor(tx,ty,color,icon,key,name,lines){
+  function wcDoor(tx,ty,color,icon,key,name,phrases){
     const x=tx*TS, y=ty*TS;
     obj(x,y,y+15,(g)=>{
       g.fillStyle='#5a5248'; g.fillRect(x+2,y,12,14);
@@ -773,19 +814,19 @@ function buildWorld(){
     interactable(tx+0.5,ty+0.5,1.4,name,()=>{
       if(!wcFound[key]){ wcFound[key]=true; sfx('ok');
         const n = ['men','family','women'].filter(k=>wcFound[k]).length;
-        say(name, lines.concat(['('+n+'/3 LEGENDARY RESTROOMS DISCOVERED)']), ()=>{
+        say(name, phrases.concat(['('+n+'/3 LEGENDARY RESTROOMS DISCOVERED)']), ()=>{
           if (wcFound.men&&wcFound.family&&wcFound.women) completeTask('wc');
         });
       } else say(name, ["STILL LEGENDARY."]);
     });
   }
   wcDoor(28.5,10.05,'#2b6db0','m','men', "MEN'S BASEMENT RESTROOM",
-    ["TWELVE STEPS DOWN. COOL AIR. ANCIENT PIPES.","A TRUE PILGRIMAGE."]);
+    ["TWELVE STEPS DOWN. COOL AIR. ANCIENT PIPES. A TRUE PILGRIMAGE."]);
   wcDoor(31.9,17,'#1f8a5f','f','family', "ACCESS & FAMILY RESTROOM",
-    ["ROOMY. ACCESSIBLE. ACCLAIMED.","FIVE STARS. WOULD CHANGE A DIAPER HERE AGAIN."]);
+    ["ROOMY. ACCESSIBLE. ACCLAIMED. FIVE STARS. WOULD CHANGE A DIAPER HERE AGAIN."]);
   // the women's restroom is reached from inside the church, off the narthex
   wcDoor(23.6,27.6,'#8a4f9e','w','women', "WOMEN'S SANCTUARY RESTROOM",
-    ["TUCKED OFF THE NARTHEX AT THE BACK OF THE CHURCH.","THE FANCIEST RESTROOM IN NORTH OAKLAND.","IT'S BASICALLY A CHAPEL WITH SINKS."]);
+    ["TUCKED OFF THE NARTHEX AT THE BACK OF THE CHURCH. THE FANCIEST RESTROOM IN NORTH OAKLAND. IT'S BASICALLY A CHAPEL WITH SINKS."]);
   // narthex welcome table
   (function(){ const x=7.2*TS, y=28.2*TS;
     obj(x,y,y+11,(g)=>{
@@ -797,7 +838,8 @@ function buildWorld(){
     addSolid(x,y,26,10);
   })();
   interactable(8,28.5,1.4,'WELCOME TABLE',()=>say('NARTHEX',
-    ["BULLETINS, NAME TAGS, AND A SIGN-UP SHEET","FOR SOMETHING CALLED 'PIEROGI NIGHT.'","YOU SIGN UP. OBVIOUSLY."]));
+    ["BULLETINS, NAME TAGS, AND A SIGN-UP SHEET FOR SOMETHING CALLED 'PIEROGI NIGHT.'",
+     "YOU SIGN UP. OBVIOUSLY."]));
 
   /* fellowship hall furnishings */
   function pottedPlant(tx,ty){
@@ -820,7 +862,7 @@ function buildWorld(){
     });
   })();
   interactable(26.2,10.8,1.2,'BULLETIN BOARD',()=>say('BULLETIN BOARD',
-    ["'POLKA LESSONS - TUESDAYS'","'CHOIR NEEDS TENORS. DESPERATELY.'","'FOUND: ONE LEDERHOSEN BUTTON. VERY SHINY.'"]));
+    ["'POLKA LESSONS - TUESDAYS'\n'CHOIR NEEDS TENORS. DESPERATELY.'\n'FOUND: ONE LEDERHOSEN BUTTON. VERY SHINY.'"]));
 
   /* --- kid's center --- */
   for (const bx of [37,41,45]){
@@ -832,9 +874,9 @@ function buildWorld(){
     });
     addSolid(x,y+2,40,10);
   }
-  interactable(38,8.5,1.5,'CRAFT BOOTH',()=>say('CAITLYN',["HI, I'M CAITLYN! WELCOME TO CRAFTS!","GLITTER. GOOGLY EYES. POPSICLE STICKS.","THE HOLY TRINITY OF CRAFTS."]));
-  interactable(42,8.5,1.5,'PLDM TABLE',()=>say('DEBRA',["HI! I'M DEBRA, WITH PITTSBURGH","LUTHERAN DEAF MINISTRIES.","WANT TO LEARN THE SIGN FOR 'PRETZEL'?","...THERE YOU GO. YOUR DAY JUST IMPROVED."]));
-  interactable(46,8.5,1.5,'GAMES BOOTH',()=>say('RING TOSS',["THE RINGS ARE PRETZEL-SHAPED.","NOBODY HAS EVER WON. IT'S PERFECT."]));
+  interactable(38,8.5,1.5,'CRAFT BOOTH',()=>say('CAITLYN',["HI, I'M CAITLYN! WELCOME TO CRAFTS!","GLITTER. GOOGLY EYES. POPSICLE STICKS. THE HOLY TRINITY OF CRAFTS.","EVERY YEAR SOMEONE GLUES A GOOGLY EYE TO THE PASTOR. EVERY YEAR HE PRETENDS NOT TO NOTICE."]));
+  interactable(42,8.5,1.5,'PLDM TABLE',()=>say('DEBRA',["HI! I'M DEBRA, WITH PITTSBURGH LUTHERAN DEAF MINISTRIES.","WANT TO LEARN THE SIGN FOR 'PRETZEL'? ...THERE YOU GO. YOUR DAY JUST IMPROVED.","DEAF AND HEARING FOLKS AT THE SAME TABLE, EATING THE SAME PRETZELS. THAT'S THE WHOLE IDEA."]));
+  interactable(46,8.5,1.5,'GAMES BOOTH',()=>say('RING TOSS',["THE RINGS ARE PRETZEL-SHAPED.","NOBODY HAS EVER WON. IT'S PERFECT.","THE GRAND PRIZE IS A DIFFERENT, SMALLER PRETZEL."]));
   // balloon stand
   (function(){ const x=48*TS, y=10*TS;
     obj(x,y,y+18,(g)=>{
@@ -860,9 +902,11 @@ function buildWorld(){
   bigTent(30.5,28,4,'#3b6ea8','#f4e9c8','PALM');
   bigTent(30.5,32.5,4,'#3b6ea8','#f4e9c8','LSF');
   interactable(32.5,29.6,1.8,'PALM TENT',()=>say('PALM',
-    ["PITTSBURGH AREA LUTHERAN MINISTRIES.","DOING GOOD ALL OVER THE CITY.","THEY HAVE A CLIPBOARD AND THEY ARE","NOT AFRAID TO USE IT."]));
+    ["PITTSBURGH AREA LUTHERAN MINISTRIES. DOING GOOD ALL OVER THE CITY.",
+     "THEY HAVE A CLIPBOARD AND THEY ARE NOT AFRAID TO USE IT."]));
   interactable(32.5,34.1,1.8,'LSF TENT',()=>say('LSF',
-    ["LUTHERAN STUDENT FELLOWSHIP.","COLLEGE STUDENTS POWERED BY GENUINE","COMMUNITY. (ALSO THE FREE FOOD.)"]));
+    ["LUTHERAN STUDENT FELLOWSHIP.",
+     "COLLEGE STUDENTS POWERED BY GENUINE COMMUNITY. (ALSO THE FREE FOOD.)"]));
 
   /* --- GRUB line: in the gap between the parish building and the rectory --- */
   bigTent(44,16.9,4,'#f2f0ea','#e2dfd6','GRUB',{bunting:true});
@@ -887,7 +931,7 @@ function buildWorld(){
   interactable(45.5,19.9,1.8,'FOOD COUNTER',()=>{
     if (!done.pretzel){
       completeTask('pretzel');
-      say('MIRKA', ["ONE GIANT PRETZEL! STILL WARM.","THE SECRET INGREDIENT IS LUTHERAN HOSPITALITY.","...AND BUTTER. MOSTLY BUTTER."]);
+      say('MIRKA', ["ONE GIANT PRETZEL! STILL WARM.","THE SECRET INGREDIENT IS LUTHERAN HOSPITALITY. ...AND BUTTER. MOSTLY BUTTER."]);
     } else {
       say('MIRKA', ["POTATO SALAD? SAUERKRAUT? STRUDEL?","YES."]);
     }
@@ -915,7 +959,7 @@ function buildWorld(){
     }
   })();
   interactable(16.5,39.5,1.8,'AXE THROW',()=>{
-    say('ALEX', ["AXE THROWING AT A CHURCH FESTIVAL?","IT'S CALLED FAITH, BUDDY.","STEP UP! PRESS THE BUTTON WHEN THE MARKER","IS DEAD CENTER!"], ()=>{ startAxe(); });
+    say('ALEX', ["AXE THROWING AT A CHURCH FESTIVAL?","IT'S CALLED FAITH, BUDDY.","STEP UP! PRESS THE BUTTON WHEN THE MARKER IS DEAD CENTER!"], ()=>{ startAxe(); });
   });
   interactable(16.4,35.4,1.5,'TARGET',()=>{
     say('ALEX', ["HEY! YOU THROW FROM THE LINE!","...OK, FINE. STEP RIGHT UP!"], ()=>{ startAxe(); });
@@ -925,8 +969,9 @@ function buildWorld(){
   bigTent(5,37,4,'#3b6ea8','#f4e9c8','INFO');
   counterObj(5,40,4,'#f4e9c8');
   interactable(6.8,40.4,1.7,'INFO TENT',()=>{
-    say('TERRY (FOCUS)', ["WILLKOMMEN TO FIRST TRINITY OKTOBERFEST!","FOOD! MUSIC! AXE THROWING! THREE LEGENDARY RESTROOMS!",
-      "GRAB A FESTKARTE - THAT'S YOUR QUEST LIST.","PRESS TAB (OR THE QUESTS BUTTON) ANY TIME!"]);
+    say('TERRY (FOCUS)', ["WILLKOMMEN TO FIRST TRINITY OKTOBERFEST!",
+      "FOOD! MUSIC! AXE THROWING! THREE LEGENDARY RESTROOMS!",
+      "GRAB A FESTKARTE - THAT'S YOUR QUEST LIST. PRESS TAB (OR THE QUESTS BUTTON) ANY TIME!"]);
   });
   (function(){ const x=10.2*TS, y=39*TS;  // QR sign
     obj(x,y,y+16,(g)=>{
@@ -939,7 +984,7 @@ function buildWorld(){
     });
     addSolid(x+4,y+10,4,6);
   })();
-  interactable(10.5,39.5,1.4,'QR SIGN',()=>say('QR CODE',["YOU SCAN THE WOODEN QR CODE.","IT JUST LEADS TO MORE OKTOBERFEST.","INCREDIBLE. NO NOTES."]));
+  interactable(10.5,39.5,1.4,'QR SIGN',()=>say('QR CODE',["YOU SCAN THE WOODEN QR CODE. IT JUST LEADS TO MORE OKTOBERFEST.","INCREDIBLE. NO NOTES."]));
   (function(){ const x=1.2*TS, y=43.8*TS;  // EXIT sign over the west driveway
     obj(x,y,y+14,(g)=>{
       g.fillStyle='#6b4a2b'; g.fillRect(x+2,y+4,2,10); g.fillRect(x+40,y+4,2,10);
@@ -947,7 +992,7 @@ function buildWorld(){
       drawText('EXIT $', x+22, y-3, 1, '#f4e9c8','center');
     });
   })();
-  interactable(2.6,44.6,1.8,'EXIT',()=>say('EXIT DRIVEWAY',["THE EXIT DRIVEWAY. ONE WAY, DOWNHILL,","BACK TO THE REAL WORLD.","THE PRETZELS WILL MISS YOU.","(THE FEELING IS MUTUAL.)"]));
+  interactable(2.6,44.6,1.8,'EXIT',()=>say('EXIT DRIVEWAY',["THE EXIT DRIVEWAY. ONE WAY, DOWNHILL, BACK TO THE REAL WORLD.","THE PRETZELS WILL MISS YOU.","(THE FEELING IS MUTUAL.)"]));
 
   /* --- biergarten: one big white canopy tent with lanterns, like the real thing --- */
   bigTent(48,29,10,'#f2f0ea','#e2dfd6','BIERGARTEN',{bunting:true,lanterns:true});
@@ -970,7 +1015,7 @@ function buildWorld(){
     });
   })();
   interactable(52.5,33.5,1.8,'BEER COUNTER',()=>{
-    say('OTTO', ["EIN STEIN, BITTE! FESTBIER OR ROOT BEER -","WE DO NOT JUDGE, THIS IS A CHURCH.","NOW HOLD IT UP! ARM STRAIGHT! IT'S STEIN HOLD TIME!","MASH THE BUTTON TO KEEP THAT STEIN UP!"], ()=>{ startStein(); });
+    say('OTTO', ["EIN STEIN, BITTE! FESTBIER OR ROOT BEER - WE DO NOT JUDGE, THIS IS A CHURCH.","NOW HOLD IT UP! ARM STRAIGHT! IT'S STEIN HOLD TIME!","MASH THE BUTTON TO KEEP THAT STEIN UP!"], ()=>{ startStein(); });
   });
   // kegs
   (function(){ const x=48.8*TS, y=30.6*TS;
@@ -1018,7 +1063,7 @@ function buildWorld(){
   })();
   interactable(55.4,38.5,2.2,'STAGE',()=>{
     if (!done.song){
-      say('POLKAMEISTERS', ["WE ARE THE PITTSBURGH POLKAMEISTERS!","WE KNOW 400 POLKAS","AND ONE (1) JOURNEY SONG.","GOT A REQUEST?"], ()=>{ startSong(); });
+      say('POLKAMEISTERS', ["WE ARE THE PITTSBURGH POLKAMEISTERS!","WE KNOW 400 POLKAS AND ONE (1) JOURNEY SONG.","GOT A REQUEST?"], ()=>{ startSong(); });
     } else {
       say('POLKAMEISTERS', ["BACK FOR MORE? WHAT'LL IT BE?"], ()=>{ startSong(); });
     }
@@ -1127,8 +1172,8 @@ function buildWorld(){
     });
     addSolid(x+6,y+12,4,4);
   })();
-  interactable(58.2,43,1.6,'PARKING SIGN',()=>say('SIGN',["'PARKING: FOLLOW THE DRIVEWAY ALL THE WAY UP.'","'THE LOT IS BEHIND THE BUILDING.'","'TRUST THE SIGN. THE SIGN KNOWS.'"]));
-  interactable(45,3,2.5,'PARKING LOT',()=>say('THE BACK LOT',["THE SECRET PARKING LOT BEHIND THE CHURCH.","ONLY LOCALS KNOW ABOUT IT.","...AND NOW YOU. WELCOME TO THE INNER CIRCLE."]));
+  interactable(58.2,43,1.6,'PARKING SIGN',()=>say('SIGN',["'PARKING: FOLLOW THE DRIVEWAY ALL THE WAY UP.'\n'THE LOT IS BEHIND THE BUILDING.'","'TRUST THE SIGN. THE SIGN KNOWS.'"]));
+  interactable(45,3,2.5,'PARKING LOT',()=>say('THE BACK LOT',["THE SECRET PARKING LOT BEHIND THE CHURCH. ONLY LOCALS KNOW ABOUT IT.","...AND NOW YOU. WELCOME TO THE INNER CIRCLE."]));
 
   /* --- pumpkins scattered --- */
   pumpkin(12.2,31.6); pumpkin(16,32); pumpkin(5,36); pumpkin(35.3,43.8); pumpkin(21,35.9); pumpkin(57.4,20.6);
@@ -1198,7 +1243,8 @@ function buildWorld(){
     addSolid(x+2,y+10,28,6);
   })();
   interactable(20.5,33.2,1.6,'CHURCH SIGN',()=>say('CHURCH SIGN',
-    ["FIRST TRINITY EVANGELICAL LUTHERAN CHURCH","DIVINE SERVICE: SUNDAY 11:00 AM","TODAY'S MESSAGE:","'THE WURST IS YET TO COME.'"]));
+    ["FIRST TRINITY EVANGELICAL LUTHERAN CHURCH\nDIVINE SERVICE: SUNDAY 11:00 AM",
+     "TODAY'S MESSAGE:\n'THE WURST IS YET TO COME.'"]));
   cornStalk(27.1,23.05); cornStalk(30,23.05);
 
   /* --- red velvet rope queue leading up to the food line --- */
@@ -1240,7 +1286,7 @@ function buildWorld(){
     });
   })();
   interactable(6.6,33.2,1.9,'CORNHOLE',()=>{
-    say('KRISTI', ["CORNHOLE! I'M KRISTI. REIGNING CHAMPION.","THE OFFICIAL SPORT OF WAITING FOR BRATS.","SET YOUR POWER, THEN YOUR AIM.","SINK ONE AND I'LL BE IMPRESSED."], ()=>{ startCorn(); });
+    say('KRISTI', ["CORNHOLE! I'M KRISTI. REIGNING CHAMPION.","THE OFFICIAL SPORT OF WAITING FOR BRATS.","SET YOUR POWER, THEN YOUR AIM. SINK ONE AND I'LL BE IMPRESSED."], ()=>{ startCorn(); });
   });
 
   /* --- lamp posts on the lawn --- */
@@ -1292,34 +1338,34 @@ function buildWorld(){
 
   /* ------------------------------------------------------------- NPCs */
   npc(14.2,33.8,{name:'PASTOR JANSSEN', hat:'collar', shirt:'#2b2b33', pants:'#1e1e26', hair:'#9a9a9a', wander:18,
-    lines:["WELCOME, WELCOME! GOD'S WORK, FUN TIMES.","TRY THE PRETZELS. THEOLOGICALLY EXCELLENT.","WE'VE BEEN HERE SINCE 1837. THE BRATS ARE FRESHER."]});
+    phrases:["WELCOME, WELCOME! GOD'S WORK, FUN TIMES.","TRY THE PRETZELS. THEOLOGICALLY EXCELLENT.","WE'VE BEEN HERE SINCE 1837. THE BRATS ARE FRESHER."]});
   npc(45.6,18.35,{name:'MIRKA', dress:'#2f7d46', hat:'braid', hair:'#3a2a1a', still:true});
   npc(52.5,32.4,{name:'OTTO', hat:'feather', shirt:'#f5f0e6', pants:'#7a4f2a', straps:true, still:true});
   npc(52.3,18,{name:'DAVID', shirt:'#f5f0e6', pants:'#3a3a44', hat:'cap', hatColor:'#b03a3a', still:true,
     apron:true});
   npc(19,39.5,{name:'ALEX', shirt:'#b03a3a', pants:'#3a3a44', hair:'#c9542f', wander:8,
-    lines:["RULE ONE: THROW THE AXE AT THE TARGET.","RULE TWO: ONLY AT THE TARGET.","THERE ARE NO OTHER RULES."]});
+    phrases:["RULE ONE: THROW THE AXE AT THE TARGET.","RULE TWO: ONLY AT THE TARGET.","THERE ARE NO OTHER RULES."]});
   npc(7.5,31.8,{name:'KRISTI', dress:'#2b6db0', hat:'braid', hair:'#e8d24a', still:true});
   npc(38.2,7.1,{name:'CAITLYN', shirt:'#8a4f9e', pants:'#3a3a44', hair:'#6b4a2b', still:true});
   npc(42.2,7.1,{name:'DEBRA', dress:'#2b6db0', hat:'braid', hair:'#241d16', still:true});
   npc(49.5,11,{name:'DOODLES', hat:'puff', shirt:'#c17ad4', pants:'#e8d24a', nose:'#d94f4f', still:true});
   npc(6.8,39.4,{name:'TERRY', shirt:'#2b7a78', pants:'#3a3a44', hair:'#6b4a2b', hat:'cap', hatColor:'#2b7a78', still:true});
   npc(49.5,34.3,{name:'MIKE', shirt:'#3b6ea8', pants:'#3a3a44', hair:'#6b4a2b', wander:10,
-    lines:["MIKE. LIFELONG MEMBER.","FIRST IN LINE FOR BRATS EVERY YEAR.","I PACE MYSELF. THE PACE IS FOUR.","I SURE HOPE THEY GOT LIABILITY INSURANCE FOR THIS!"]});
+    phrases:["MIKE. LIFELONG MEMBER. FIRST IN LINE FOR BRATS EVERY YEAR.","I PACE MYSELF. THE PACE IS FOUR.","I SURE HOPE THEY GOT LIABILITY INSURANCE FOR THIS!"]});
   npc(54.5,34.5,{name:'NORM', shirt:'#57b060', pants:'#241d16', hair:'#9a9a9a', wander:10,
-    lines:["NORM. I CAME FOR THE POLKA.","I STAYED BECAUSE I SAT DOWN","AND THESE CHAIRS ARE PRETTY GOOD."]});
+    phrases:["NORM. I CAME FOR THE POLKA.","I STAYED BECAUSE I SAT DOWN AND THESE CHAIRS ARE PRETTY GOOD.","SOMEONE BROUGHT ME A PRETZEL WITHOUT ME EVEN ASKING. BEST CHURCH IN PITTSBURGH."]});
   npc(35.2,29,{name:'BRANDON', shirt:'#f5f0e6', pants:'#7a4f2a', hair:'#3a2a1a', wander:10,
-    lines:["BRANDON. PALM - PITTSBURGH AREA","LUTHERAN MINISTRIES. CLIPBOARD GUY.","IS IT JUST ME, OR DOES EVERYTHING LOOK","A LITTLE... PIXELATED TODAY?"]});
+    phrases:["BRANDON. PALM - PITTSBURGH AREA LUTHERAN MINISTRIES. CLIPBOARD GUY.","SIGN UP FOR SOMETHING. ANYTHING. THAT'S HOW THEY GET YOU. I SIGNED UP IN 2009.","IS IT JUST ME, OR DOES EVERYTHING LOOK A LITTLE... PIXELATED TODAY?"]});
   npc(35.2,33.4,{name:'PASTOR ANDRAE', hat:'collar', shirt:'#2b2b33', pants:'#1e1e26', hair:'#241d16', wander:10,
-    lines:["PASTOR ANDRAE. I'M HERE WITH LSF -","LUTHERAN STUDENT FELLOWSHIP.","COLLEGE STUDENTS RUN ON FREE FOOD","AND GENUINE COMMUNITY. IN THAT ORDER."]});
+    phrases:["PASTOR ANDRAE. I'M HERE WITH LSF - LUTHERAN STUDENT FELLOWSHIP.","COLLEGE STUDENTS RUN ON FREE FOOD AND GENUINE COMMUNITY. IN THAT ORDER.","PITT AND CMU ARE BOTH WALKING DISTANCE. SO IS THE FREE FOOD. YOU DO THE MATH."]});
   npc(46,40.5,{name:'CHUCK', shirt:'#241d16', pants:'#d9b23a', hat:'cap', hatColor:'#241d16', wander:30,
-    lines:["THIS IS BETTER THAN A STILLERS GAME.","DON'T TELL ANYONE I SAID DAT, YINZ.","I PUT KRAUT ON MY PRETZEL. I CONTAIN MULTITUDES."]});
+    phrases:["THIS IS BETTER THAN A STILLERS GAME.","DON'T TELL ANYONE I SAID DAT, YINZ.","I PUT KRAUT ON MY PRETZEL. I CONTAIN MULTITUDES."]});
   npc(40,13,{name:'PIPER', shirt:'#e8d24a', pants:'#4f7ed9', hair:'#3a2a1a', wander:40, fast:true,
-    lines:["I ATE FOUR PRETZELS AND I FEEL INVINCIBLE.","THE BALLOON GUY MADE ME A DOG! HIS NAME IS MR. SQUEAKS.","THE PLDM TABLE TAUGHT ME TO SIGN","'MORE PRETZELS PLEASE.' IT WORKS EVERY TIME."]});
+    phrases:["I ATE FOUR PRETZELS AND I FEEL INVINCIBLE.","THE BALLOON GUY MADE ME A DOG! HIS NAME IS MR. SQUEAKS.","THE PLDM TABLE TAUGHT ME TO SIGN 'MORE PRETZELS PLEASE.' IT WORKS EVERY TIME."]});
   npc(52,36.5,{name:'GRETA', dress:'#b23a48', hat:'braid', hair:'#6b4a2b', wander:16,
-    lines:["MY GRANDMOTHER'S DIRNDL. MY GRANDFATHER'S APPETITE.","THE POLKA IS IN 2/4 BUT MY HEART IS IN 6/8."]});
+    phrases:["MY GRANDMOTHER'S DIRNDL. MY GRANDFATHER'S APPETITE.","THE POLKA IS IN 2/4 BUT MY HEART IS IN 6/8.","MY GRANDMOTHER WOULD HAVE HATED THE AXE THROWING. I LOVE THE AXE THROWING."]});
   npc(32.95,22.9,{name:'OFFICER DAN', shirt:'#2b2b33', pants:'#241d16', hat:'cap', hatColor:'#241d16', still:true,
-    lines:["EVERYTHING IS UNDER CONTROL.","THE ONLY CRIME HERE IS HOW GOOD THE BRATS ARE.","YES, I'VE HAD FOUR PRETZELS.","IT'S CALLED COMMUNITY POLICING."]});
+    phrases:["EVERYTHING IS UNDER CONTROL.","THE ONLY CRIME HERE IS HOW GOOD THE BRATS ARE.","YES, I'VE HAD FOUR PRETZELS. IT'S CALLED COMMUNITY POLICING."]});
 
   /* balloon clown interactable */
   interactable(49.5,11.5,1.8,'BALLOONS',()=>{
@@ -1390,14 +1436,14 @@ function update(dt){
     return;
   }
   if (state==='dialog'){
-    const line = dialog.lines[dialog.idx];
-    dialog.chars += dt*46;
+    const total = pageLen(dialog.pages[dialog.idx]);
+    dialog.chars += dt*DLG_CPS;
     if (interactPressed){
       interactPressed = false;
-      if (dialog.chars < line.length) dialog.chars = line.length;
+      if (dialog.chars < total) dialog.chars = total;      // first press: fill the page
       else {
         dialog.idx++; dialog.chars = 0; sfx('blip');
-        if (dialog.idx >= dialog.lines.length){
+        if (dialog.idx >= dialog.pages.length){
           const cb = dialog.onDone; dialog = null; state='play';
           if (cb) cb();
         }
@@ -1450,7 +1496,7 @@ function update(dt){
       if (!best){
         // wandering NPCs with lines
         for (const n of npcs){
-          if (!n.cfg.lines) continue;
+          if (!n.cfg.phrases) continue;
           const nx=(n.x+6)-pcx, nyy=(n.y+8)-pcy, d=nx*nx+nyy*nyy;
           if (d < 22*22 && d < bd){ bd=d; best={npc:n}; }
         }
@@ -1460,7 +1506,7 @@ function update(dt){
           const n=best.npc;
           n.dir = (pcx < n.x+6) ? 'left' : 'right';
           if (Math.abs(pcy-(n.y+8)) > Math.abs(pcx-(n.x+6))) n.dir = (pcy<n.y+8)?'up':'down';
-          say(n.cfg.name, n.cfg.lines);
+          say(n.cfg.name, n.cfg.phrases);
         }
         else best.action();
       }
@@ -1535,7 +1581,7 @@ function updateAxe(dt){
       if (a.result==='bull'){
         state='play';
         completeTask('axe');
-        say('ALEX',["BULLSEYE! INCREDIBLE!","YOU'RE BASICALLY A LUMBERJACK NOW.","THAT'S LEGALLY BINDING IN CANADA."]);
+        say('ALEX',["BULLSEYE! INCREDIBLE!","YOU'RE BASICALLY A LUMBERJACK NOW. THAT'S LEGALLY BINDING IN CANADA."]);
       } else if (a.result==='close'){
         say('ALEX',["SO CLOSE! THE HAY BALE FELT THAT.","AGAIN! AGAIN!"], ()=>startAxe());
       } else {
@@ -1576,13 +1622,13 @@ function updateCorn(dt){
       if (c.result==='hole'){
         state='play'; cornState=null;
         completeTask('corn');
-        say('KRISTI',["IN THE HOLE! CLUNK.","KRISTI NODS SLOWLY.","THAT IS HER HIGHEST HONOR."]);
+        say('KRISTI',["IN THE HOLE! CLUNK.","KRISTI NODS SLOWLY. THAT IS HER HIGHEST HONOR."]);
       } else if (c.result==='board'){
-        say('KRISTI',["ON THE BOARD. IT SLID... AND STAYED.","'NOT BAD!' - KRISTI","AGAIN!"], ()=>startCorn());
+        say('KRISTI',["ON THE BOARD. IT SLID... AND STAYED.","'NOT BAD!' - KRISTI. AGAIN!"], ()=>startCorn());
       } else if (c.result==='short'){
         say('KRISTI',["PLOP. RIGHT IN FRONT OF THE BOARD.","'MORE ARM!' - KRISTI"], ()=>startCorn());
       } else if (c.result==='long'){
-        say('KRISTI',["IT SAILED CLEAN OVER THE BOARD.","KRISTI DUCKED. SHE DID NOT HAVE TO.","SHE DID IT FOR DRAMA."], ()=>startCorn());
+        say('KRISTI',["IT SAILED CLEAN OVER THE BOARD.","KRISTI DUCKED. SHE DID NOT HAVE TO. SHE DID IT FOR DRAMA."], ()=>startCorn());
       } else {
         say('KRISTI',["WIDE. VERY WIDE.","A SQUIRREL IS NOW INVESTIGATING IT."], ()=>startCorn());
       }
@@ -1603,10 +1649,10 @@ function updateStein(dt){
     if (s.doneFlag==='win'){
       state='play';
       completeTask('stein');
-      say('OTTO',["ARMS OF STEEL! STEIN OF GLORY!","YOU WIN THE RESPECT OF EVERYONE","AND ONE (1) COMMEMORATIVE COASTER."]);
+      say('OTTO',["ARMS OF STEEL! STEIN OF GLORY!","YOU WIN THE RESPECT OF EVERYONE AND ONE (1) COMMEMORATIVE COASTER."]);
     } else {
       state='play'; steinState=null;
-      say('OTTO',["THE STEIN HAS FALLEN!","THE FIVE SECOND RULE DOES NOT APPLY","TO BEVERAGES.","COME BACK WHEN YOUR ARM FORGIVES YOU."]);
+      say('OTTO',["THE STEIN HAS FALLEN!","THE FIVE SECOND RULE DOES NOT APPLY TO BEVERAGES.","COME BACK WHEN YOUR ARM FORGIVES YOU."]);
     }
   }
 }
@@ -1699,7 +1745,7 @@ function drawPrompt(){
     if (dx*dx+dy*dy < it.r*it.r){ near=true; label=it.name; break; }
   }
   if (!near) for (const n of npcs){
-    if (!n.cfg.lines) continue;
+    if (!n.cfg.phrases) continue;
     const dx=(n.x+6)-pcx, dy=(n.y+8)-pcy;
     if (dx*dx+dy*dy < 22*22){ near=true; label='TALK: '+n.cfg.name; break; }
   }
@@ -1726,12 +1772,19 @@ function panel(x,y,w,h,title){
 }
 
 function drawDialog(){
-  const line = dialog.lines[dialog.idx];
-  const shown = line.slice(0, dialog.chars|0);
-  panel(14, VH-76, VW-28, 64, dialog.name);
-  drawText(shown, 26, VH-52, 1, '#f4e9c8');
-  if ((dialog.chars|0)>=line.length && (playT*2|0)%2===0)
-    drawText(isTouch?'TAP A':'E', VW-52, VH-24, 1, '#e8d24a');
+  const page = dialog.pages[dialog.idx];
+  /* box grows to fit the page and stays anchored at the bottom, so a one-line
+     phrase gets a one-line box instead of a mostly empty one */
+  const h = 34 + page.length*10, y = VH-12-h;
+  panel(14, y, VW-28, h, dialog.name);
+  let rem = dialog.chars|0;                              // reveal runs across lines
+  for (let i=0;i<page.length;i++){
+    const n = Math.max(0, Math.min(page[i].length, rem));
+    drawText(page[i].slice(0, n), 26, y+20+i*10, 1, '#f4e9c8');
+    rem -= page[i].length;
+  }
+  if ((dialog.chars|0) >= pageLen(page) && (playT*2|0)%2===0)
+    drawText(isTouch?'TAP A':'E', VW-52, y+20+page.length*10+2, 1, '#e8d24a');
 }
 
 function drawCard(){
