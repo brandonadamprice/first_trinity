@@ -112,7 +112,9 @@ touch controls on phones/tablets.
   so the file stays dependency-free. It draws dark-on-light with the 4-module
   quiet zone the spec wants — invert it or crop the margin and phones stop
   reading it. `image-rendering: pixelated` keeps the modules crisp at any
-  display scale.
+  display scale. Clicking or tapping the code opens the page in a new tab —
+  the panel's geometry lives in one `qrLayout()` so the clickable area and the
+  drawn one can't drift apart.
 - The bitmap font is ASCII plus `Ë`, whose E is squashed to six rows to fit the
   diaeresis. `drawText` silently skips glyphs it doesn't have, so a new
   character's name needs a glyph before it will render.

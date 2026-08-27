@@ -281,6 +281,25 @@ if (isTouch){
 document.getElementById('cardBtn').addEventListener('click', ()=>{ toggleCard(); startAudioOnGesture(); });
 document.getElementById('musicBtn').addEventListener('click', ()=>{ startAudioOnGesture(); toggleMusic(); });
 
+/* Clicking (or tapping) the QR opens the fest page. The canvas is displayed at
+   whatever scale fits, so client coords have to be mapped back to the 480-wide
+   internal space before hit-testing. */
+function canvasPoint(e){
+  const r = CVS.getBoundingClientRect();
+  return [ (e.clientX-r.left) * (VW/r.width), (e.clientY-r.top) * (VH/r.height) ];
+}
+CVS.addEventListener('click', e=>{
+  startAudioOnGesture();
+  if (state!=='qr') return;
+  const [cx,cy] = canvasPoint(e);
+  if (qrHit(cx,cy)) openFestPage();
+});
+CVS.addEventListener('mousemove', e=>{
+  if (state!=='qr'){ if (CVS.style.cursor) CVS.style.cursor=''; return; }
+  const [cx,cy] = canvasPoint(e);
+  CVS.style.cursor = qrHit(cx,cy) ? 'pointer' : '';
+});
+
 function dirInput(){
   let dx=0, dy=0;
   if (keys['ArrowLeft']||keys['a']||keys['A']||padState.l) dx=-1;
@@ -2095,23 +2114,44 @@ function drawDialog(){
 }
 
 function startQR(){ state='qr'; sfx('ok'); }
+/* Panel geometry lives here so the drawing and the clickable area can't drift
+   apart - they read the same numbers. */
+function qrLayout(){
+  const n = QR.length, QZ = 4, total = n + QZ*2;
+  const s = Math.max(2, Math.min(6, Math.floor(Math.min(VW-56, VH-130)/total)));
+  const side = total*s;
+  const pw = Math.max(side+28, 210), ph = side + 74;
+  const px = Math.round((VW-pw)/2), py = Math.round((VH-ph)/2);
+  const qx = px + Math.round((pw-side)/2), qy = py + 22;
+  return {n, QZ, s, side, px, py, pw, ph, qx, qy,
+          hit:{x:qx, y:qy, w:side, h:side+16}};   // the code plus its url line
+}
+function qrHit(cx,cy){
+  const h = qrLayout().hit;
+  return cx>=h.x && cx<h.x+h.w && cy>=h.y && cy<h.y+h.h;
+}
+/* Opens the fest page in a new tab. An anchor click is more reliable than
+   window.open here: it opens a tab rather than a popup window, and carries
+   noopener so the new page can't reach back through window.opener. */
+function openFestPage(){
+  const a = document.createElement('a');
+  a.href = QR_URL; a.target = '_blank'; a.rel = 'noopener noreferrer';
+  document.body.appendChild(a); a.click(); a.remove();
+}
 /* Draws the code big enough to actually scan off the screen: dark modules on a
    light field, with the 4-module quiet zone the spec wants - an inverted code,
    or one butted against the dark panel, will not read on most phones. */
 function drawQRPanel(){
-  const n = QR.length, QZ = 4, total = n + QZ*2;
-  const s  = Math.max(2, Math.min(6, Math.floor(Math.min(VW-56, VH-116)/total)));
-  const side = total*s;
-  const pw = Math.max(side+28, 210), ph = side + 66;
-  const px = Math.round((VW-pw)/2), py = Math.round((VH-ph)/2);
-  panel(px, py, pw, ph, 'FIRST TRINITY OKTOBERFEST');
-  const qx = px + Math.round((pw-side)/2), qy = py + 22;
-  CTX.fillStyle = '#ffffff'; CTX.fillRect(qx, qy, side, side);   // field + quiet zone
+  const L = qrLayout(), n = L.n, QZ = L.QZ, s = L.s;
+  panel(L.px, L.py, L.pw, L.ph, 'FIRST TRINITY OKTOBERFEST');
+  CTX.fillStyle = '#ffffff'; CTX.fillRect(L.qx, L.qy, L.side, L.side);  // field + quiet zone
   CTX.fillStyle = '#000000';
   for (let y=0;y<n;y++) for (let x=0;x<n;x++)
-    if (QR[y][x]==='1') CTX.fillRect(qx+(x+QZ)*s, qy+(y+QZ)*s, s, s);
-  drawText(QR_TEXT, VW/2, qy+side+7, 1, '#f4e9c8', 'center');
-  drawText(isTouch?'TAP A TO CLOSE':'E TO CLOSE', VW/2, qy+side+21, 1, '#8fa3bf', 'center');
+    if (QR[y][x]==='1') CTX.fillRect(L.qx+(x+QZ)*s, L.qy+(y+QZ)*s, s, s);
+  drawText(QR_TEXT, VW/2, L.qy+L.side+7, 1, '#f4e9c8', 'center');
+  drawText(isTouch?'TAP THE CODE TO OPEN IT':'CLICK THE CODE TO OPEN IT',
+           VW/2, L.qy+L.side+21, 1, '#e8d24a', 'center');
+  drawText(isTouch?'TAP A TO CLOSE':'E TO CLOSE', VW/2, L.qy+L.side+35, 1, '#8fa3bf', 'center');
 }
 function drawCard(){
   const px = VW >= 440 ? 60 : 16, ch = Math.min(VH-36, 284), cb = 18 + ch;
