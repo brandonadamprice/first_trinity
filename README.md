@@ -84,3 +84,11 @@ touch controls on phones/tablets.
   an open box re-wraps if the phone is rotated. A new phrase always starts a new
   box — that's how a punchline keeps its own beat. Put `\n` inside a phrase to
   force a break (signs and the noticeboard use this).
+- Characters don't recite. Each one has a **repertoire** of about three things
+  to say, and `chatter()` plays *one* per interaction, cycling from the top, so
+  talking again gets you something new. An entry is one phrase, or an array of
+  phrases when a joke needs more than one box in a row (Alex's three rules).
+  Booths give their full spiel once — gated on a `met` flag, not on the quest,
+  so backing out of a minigame doesn't restart the whole pitch — then fall back
+  to chatter. Scripted moments (quest beats, minigame results, scenery you
+  examine) still play as written with `say()`.
