@@ -30,6 +30,11 @@ embedded in a website.
 | Quest list    | Tab / C               | ☰ QUESTS       |
 | Music on/off  | M                     | ♪ button       |
 
+On touch screens the game fills the display, the controls scale up for
+thumbs, and the D-pad is slideable — drag toward a corner to walk
+diagonally. Portrait phones get a Game Boy-style layout: a taller,
+zoomed-in view up top with the controls in their own space below.
+
 ### The Festkarte (quest list)
 
 Ten very important festival achievements:
