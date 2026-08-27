@@ -276,7 +276,8 @@ function sfx(kind){
 /* ============================================================= THE WORLD
    ground tile ids */
 const T_GRASS=0, T_PATH=1, T_SIDE=2, T_ROAD=3, T_WOOD=4, T_CARPET=5,
-      T_PINK=6, T_KID=7, T_WALL=8, T_PARK=9, T_PLAZA=10, T_STEP=11, T_FLOWER=12;
+      T_PINK=6, T_KID=7, T_WALL=8, T_PARK=9, T_PLAZA=10, T_STEP=11, T_FLOWER=12,
+      T_PATIO=13;
 const ground = [], solid = [];
 for (let y=0;y<MH;y++){ ground.push(new Array(MW).fill(T_GRASS)); solid.push(new Array(MW).fill(false)); }
 function setT(x,y,t,s){ if(x<0||y<0||x>=MW||y>=MH)return; ground[y][x]=t; if(s!==undefined) solid[y][x]=s; }
@@ -292,6 +293,7 @@ rectT(0,46,MW-1,47,T_SIDE,false);
 rectT(30,1,61,4,T_PARK,false);              // parking lot behind the buildings
 rectT(59,2,61,47,T_ROAD,false);             // driveway up the right side
 rectT(37,33,57,44,T_PLAZA,false);           // biergarten plaza
+rectT(44,17,52,20,T_PATIO,false);           // back patio behind the rectory (grill zone)
 rectT(13,31,14,45,T_PATH,false);            // church walk
 rectT(12,36,57,37,T_PATH,false);            // main east-west path
 rectT(28,27,29,36,T_PATH,false);            // corridor door path
@@ -367,6 +369,13 @@ function bakeTiles(){
     } else if (t===T_STEP){
       TCX.fillStyle='#b6b0a2'; TCX.fillRect(px,py,TS,TS);
       TCX.fillStyle='#8f897c'; TCX.fillRect(px,py+5,TS,1); TCX.fillRect(px,py+11,TS,1);
+    } else if (t===T_PATIO){
+      TCX.fillStyle='#bd8b66'; TCX.fillRect(px,py,TS,TS);
+      TCX.fillStyle='#a97a58';
+      TCX.fillRect(px,py+5,TS,1); TCX.fillRect(px,py+11,TS,1);
+      TCX.fillRect(px+((y%2)?4:10),py,1,5); TCX.fillRect(px+((y%2)?10:4),py+6,1,5);
+      TCX.fillRect(px+((y%2)?12:6),py+12,1,4);
+      if (h>0.85){ TCX.fillStyle='#c79a72'; TCX.fillRect(px+((h*61)|0)%12, py+((h*29)|0)%10, 3,2); }
     } else if (t===T_FLOWER){
       TCX.fillStyle='#5e8c3e'; TCX.fillRect(px,py,TS,TS);
       const cols=['#e0912f','#d94f4f','#e8d24a','#c17ad4'];
@@ -629,7 +638,7 @@ function buildWorld(){
   for (let x=1;x<28;x+=3){ if (x<3||x>24||hash2(x,1)>0.35) tree(x, 1+((hash2(x,7)*2)|0), (x%4)); }
   for (let y=6;y<44;y+=4){ tree(1, y, (y%4)); }
   for (let y=6;y<28;y+=4){ tree(62, y, ((y+1)%4)); }
-  tree(56,26,0); tree(34,25,1); tree(22,32,3); tree(55,20,2); tree(46,20,0);
+  tree(56,26,0); tree(34,25,1); tree(22,32,3); tree(55,17,2);
 
   /* --- church interior --- */
   // altar
@@ -707,8 +716,21 @@ function buildWorld(){
     ["TWELVE STEPS DOWN. COOL AIR. ANCIENT PIPES.","A TRUE PILGRIMAGE."]);
   wcDoor(31.9,17,'#1f8a5f','f','family', "ACCESS & FAMILY RESTROOM",
     ["ROOMY. ACCESSIBLE. ACCLAIMED.","FIVE STARS. WOULD CHANGE A DIAPER HERE AGAIN."]);
-  wcDoor(25.1,23.5,'#8a4f9e','w','women', "WOMEN'S SANCTUARY RESTROOM",
-    ["THE FANCIEST RESTROOM IN NORTH OAKLAND.","IT'S BASICALLY A CHAPEL WITH SINKS."]);
+  // the women's restroom is reached from inside the church, off the narthex
+  wcDoor(23.6,27.6,'#8a4f9e','w','women', "WOMEN'S SANCTUARY RESTROOM",
+    ["TUCKED OFF THE NARTHEX AT THE BACK OF THE CHURCH.","THE FANCIEST RESTROOM IN NORTH OAKLAND.","IT'S BASICALLY A CHAPEL WITH SINKS."]);
+  // narthex welcome table
+  (function(){ const x=6*TS, y=28.2*TS;
+    obj(x,y,y+11,(g)=>{
+      g.fillStyle='#8a5a30'; g.fillRect(x,y,26,10);
+      g.fillStyle='#9a6a3a'; g.fillRect(x,y,26,2);
+      g.fillStyle='#f4e9c8'; g.fillRect(x+3,y+3,8,5);
+      g.fillStyle='#d9cba0'; g.fillRect(x+14,y+3,8,5);
+    });
+    addSolid(x,y,26,10);
+  })();
+  interactable(6.8,28.5,1.4,'WELCOME TABLE',()=>say('NARTHEX',
+    ["BULLETINS, NAME TAGS, AND A SIGN-UP SHEET","FOR SOMETHING CALLED 'PIEROGI NIGHT.'","YOU SIGN UP. OBVIOUSLY."]));
 
   /* fellowship hall furnishings */
   function pottedPlant(tx,ty){
@@ -755,6 +777,16 @@ function buildWorld(){
       for(let i=0;i<5;i++){ g.fillStyle=cols[i]; g.fillRect(x+6+i*5, y-12+((i%2)*3), 4,5); }
     });
     addSolid(x,y+8,30,10);
+  })();
+
+  /* sign over the hall's main entrance (off the path past the food + tents) */
+  (function(){ const cx=43*TS, y=16*TS+2;
+    obj(cx,y,y+12,(g)=>{
+      const label="KID'S CENTER", w=textW(label,1)+10;
+      g.fillStyle='#f4e9c8'; g.fillRect(cx-w/2, y, w, 11);
+      g.fillStyle='#2b6db0'; g.fillRect(cx-w/2, y, w, 1); g.fillRect(cx-w/2, y+10, w, 1);
+      drawText(label, cx, y+2, 1, '#2b6db0','center');
+    });
   })();
 
   /* --- gazebos (two, like the map) --- */
@@ -890,8 +922,8 @@ function buildWorld(){
       say('POLKAMEISTERS', ["PROST, FRIEND! THE TUBA NEVER SLEEPS."]);
     }
   });
-  // grill
-  (function(){ const x=37*TS, y=38.4*TS;
+  /* --- back patio behind the rectory: where the grilling happens --- */
+  (function(){ const x=44.6*TS, y=17.6*TS;
     obj(x,y,y+16,(g)=>{
       g.fillStyle='#3a3a40'; g.fillRect(x,y,26,10); g.fillRect(x+3,y+10,3,6); g.fillRect(x+20,y+10,3,6);
       g.fillStyle='#222226'; g.fillRect(x+2,y+2,22,6);
@@ -899,12 +931,58 @@ function buildWorld(){
     });
     addSolid(x,y+2,26,13);
   })();
-  interactable(38,39.5,1.8,'GRILL',()=>{
+  interactable(45.6,18.6,1.9,'GRILL',()=>{
     if (!done.brat){
       completeTask('brat');
-      say('GARY', ["BRATS! GET YER BRATS!","THE SMOKE FOLLOWS YOU BECAUSE IT LIKES YOU.","HERE - EXTRA KRAUT. TELL NO ONE."]);
+      say('GARY', ["BRATS! HOT OFF THE RECTORY PATIO GRILL!","THE SMOKE FOLLOWS YOU BECAUSE IT LIKES YOU.","HERE - EXTRA KRAUT. TELL NO ONE."]);
     } else say('GARY', ["BACK FOR SECONDS? I RESPECT IT."]);
   });
+  picnicTable(49,18.5);
+  pottedPlant(52,17);
+
+  /* --- the rectory (the pastor really lives here) --- */
+  (function(){ const x=44*TS, y=20*TS, w=9*TS;
+    obj(x,y,y+126,(g)=>{
+      g.fillStyle='rgba(0,0,0,0.15)'; g.fillRect(x+2,y+120,w-4,8);
+      // roof
+      g.fillStyle='#6e4a30'; g.fillRect(x,y+6,w,34);
+      g.fillStyle='#7f5738'; g.fillRect(x,y+6,w,6);
+      g.fillStyle='#5e3f28'; for(let i=1;i<5;i++) g.fillRect(x,y+6+i*7,w,1);
+      g.fillStyle='#5a4326'; g.fillRect(x,y+38,w,3);
+      // chimney
+      g.fillStyle='#8b8274'; g.fillRect(x+112,y-6,12,18);
+      g.fillStyle='#756c5e'; g.fillRect(x+110,y-8,16,4);
+      // upper floor: half-timbered plaster
+      g.fillStyle='#efe6d0'; g.fillRect(x+4,y+41,w-8,37);
+      g.fillStyle='#5a4326';
+      for (const vx of [4, 36, 68, 104, w-12]) g.fillRect(x+vx,y+41,4,37);
+      g.fillRect(x+4,y+74,w-8,4);
+      g.strokeStyle='#5a4326'; g.lineWidth=2;
+      g.beginPath(); g.moveTo(x+12,y+46); g.lineTo(x+32,y+72); g.stroke();
+      g.beginPath(); g.moveTo(x+32,y+46); g.lineTo(x+12,y+72); g.stroke();
+      // warm upper windows
+      g.fillStyle='#e8c25a'; g.fillRect(x+46,y+48,14,16); g.fillRect(x+80,y+48,14,16);
+      g.fillStyle='#5a4326'; g.fillRect(x+52,y+48,2,16); g.fillRect(x+86,y+48,2,16);
+      g.fillRect(x+46,y+55,14,2); g.fillRect(x+80,y+55,14,2);
+      // lower floor: brick
+      g.fillStyle='#b08a6a'; g.fillRect(x+4,y+78,w-8,46);
+      g.fillStyle='#9c785c'; for(let i=0;i<5;i++) g.fillRect(x+4,y+86+i*8,w-8,1);
+      // lower windows + flower boxes
+      g.fillStyle='#e8c25a'; g.fillRect(x+18,y+90,18,14); g.fillRect(x+w-38,y+90,18,14);
+      g.fillStyle='#5a4326'; g.fillRect(x+26,y+90,2,14); g.fillRect(x+w-30,y+90,2,14);
+      g.fillStyle='#57b060'; g.fillRect(x+16,y+104,22,4); g.fillRect(x+w-40,y+104,22,4);
+      g.fillStyle='#d94f4f'; g.fillRect(x+19,y+103,2,2); g.fillRect(x+28,y+103,2,2); g.fillRect(x+w-35,y+103,2,2); g.fillRect(x+w-26,y+103,2,2);
+      // door with little porch
+      g.fillStyle='#6e4a30';
+      g.beginPath(); g.moveTo(x+58,y+90); g.lineTo(x+73,y+78); g.lineTo(x+88,y+90); g.closePath(); g.fill();
+      g.fillStyle='#5a4326'; g.fillRect(x+64,y+90,18,34);
+      g.fillStyle='#3f2e1a'; g.fillRect(x+78,y+106,3,4);
+      g.fillStyle='#c9c2b2'; g.fillRect(x+62,y+122,22,3);
+    });
+    addSolid(x+2,y+16,w-4,108);
+  })();
+  interactable(48.5,27.8,1.9,'RECTORY',()=>say('RECTORY',
+    ["THIS IS THE RECTORY. THE PASTOR REALLY LIVES HERE.","YES, THE BRATWURST SMOKE REACHES THE KITCHEN.","NO, YOU CANNOT SEE THE FRIDGE."]));
   // picnic tables
   picnicTable(43,38); picnicTable(48,38); picnicTable(53,38);
   picnicTable(43,41.5); picnicTable(48,41.5); picnicTable(53,41.5);
@@ -952,14 +1030,14 @@ function buildWorld(){
   interactable(45,3,2.5,'PARKING LOT',()=>say('THE BACK LOT',["THE SECRET PARKING LOT BEHIND THE CHURCH.","ONLY LOCALS KNOW ABOUT IT.","...AND NOW YOU. WELCOME TO THE INNER CIRCLE."]));
 
   /* --- pumpkins scattered --- */
-  pumpkin(11.2,30.2); pumpkin(16.5,30.2); pumpkin(5,36); pumpkin(35.5,44.5); pumpkin(21,35.9); pumpkin(44,17);
+  pumpkin(11.2,30.2); pumpkin(16.5,30.2); pumpkin(5,36); pumpkin(35.5,44.5); pumpkin(21,35.9); pumpkin(53,20.6);
 
   /* ------------------------------------------------------------- NPCs */
   npc(19,31.5,{name:'PASTOR', hat:'collar', shirt:'#2b2b33', pants:'#1e1e26', hair:'#9a9a9a', wander:24,
     lines:["WELCOME, WELCOME! GOD'S WORK, FUN TIMES.","TRY THE PRETZELS. THEOLOGICALLY EXCELLENT.","WE'VE BEEN HERE SINCE 1837. THE BRATS ARE FRESHER."]});
   npc(38.5,22,{name:'HEIDI', dress:'#2f7d46', hat:'braid', hair:'#8a5a30', still:true});
   npc(41.5,32.4,{name:'OTTO', hat:'feather', shirt:'#f5f0e6', pants:'#7a4f2a', straps:true, still:true});
-  npc(38.5,37.5,{name:'GARY', shirt:'#f5f0e6', pants:'#3a3a44', hat:'cap', hatColor:'#b03a3a', still:true,
+  npc(46.6,18.4,{name:'GARY', shirt:'#f5f0e6', pants:'#3a3a44', hat:'cap', hatColor:'#b03a3a', still:true,
     apron:true});
   npc(19,39.5,{name:'AXEL', shirt:'#b03a3a', pants:'#3a3a44', hair:'#c9542f', wander:8,
     lines:["RULE ONE: THROW THE AXE AT THE TARGET.","RULE TWO: ONLY AT THE TARGET.","THERE ARE NO OTHER RULES."]});
@@ -1158,7 +1236,7 @@ function update(dt){
     notes.push({x:53*TS+rr(-40,40), y:31*TS, t:0});
   }
   for (let i=notes.length-1;i>=0;i--){ const n=notes[i]; n.t+=dt; n.y-=dt*18; n.x+=Math.sin(n.t*5)*0.5; if(n.t>2)notes.splice(i,1); }
-  if (Math.random()<dt*4) smoke.push({x:38*TS+rr(0,16), y:38.5*TS, t:0});
+  if (Math.random()<dt*4) smoke.push({x:44.7*TS+rr(0,20), y:17.8*TS, t:0});
   for (let i=smoke.length-1;i>=0;i--){ const s=smoke[i]; s.t+=dt; s.y-=dt*12; if(s.t>1.6)smoke.splice(i,1); }
   if (tempoBoostT>0){ tempoBoostT-=dt; if(tempoBoostT<=0) tempoMul=1; }
 }

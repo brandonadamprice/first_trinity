@@ -4,10 +4,11 @@ A tiny 2D pixel-art exploration game of the **First Trinity Oktoberfest**
 (First Trinity Evangelical-Lutheran Church, 533 N Neville St, Pittsburgh — est. 1837).
 
 The grounds are modeled on the official FOCUS Oktoberfest map: the Sanctuary
-(open for visits!), the fellowship hall with all **three legendary restrooms**,
-the Kid's Center + booths, the gazebos, the axe throw, the food tent, the back
-parking lot up the driveway, and the Biergarten — where the Pittsburgh
-PolkaMeisters are playing.
+(open for visits, with the Women's Sanctuary Restroom off the narthex), the
+fellowship hall, the parish hall with the Kid's Center + booths (enter from the
+main path past the food and tents), the gazebos, the axe throw, the food tent,
+the rectory with its back-patio grill, the back parking lot up the driveway,
+and the Biergarten — where the Pittsburgh PolkaMeisters are playing.
 
 ## Play
 
