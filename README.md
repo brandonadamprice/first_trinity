@@ -12,8 +12,9 @@ the PALM and LSF ministry tents (with Brandon and Pastor Andrae), the axe
 throw with Alex, cornhole with Kristi, Mirka's serving row up against the
 rectory wall (you join at the south end and walk the line),
 David grilling out back, Terry at the info tent, the back parking lot
-connecting both driveways, and the Biergarten — where Mike, Cindy and Norm
-hold down the tables and the Pittsburgh PolkaMeisters play facing the crowd.
+connecting both driveways, and the Biergarten — where Otto pours for Hazel
+Grove Brewing, Mike, Cindy and Norm hold down the tables, and the Pittsburgh
+PolkaMeisters play facing the crowd.
 Requesting a song really changes the music.
 
 ## Play
