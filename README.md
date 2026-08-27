@@ -6,13 +6,14 @@ A tiny 2D pixel-art exploration game of the **First Trinity Oktoberfest**
 The grounds are modeled on the official FOCUS Oktoberfest map: the Sanctuary
 (open for visits, with the Women's Sanctuary Restroom off the narthex and the
 organ loft above it), one walkway leading up into the fellowship hallway — the
-Kid's Center + booths (Caitlyn at crafts, Debra at the PLDM table) are entered
-from the side through it — the PALM and LSF ministry tents (with Brandon and
-Pastor Andrae), the axe throw with Alex, cornhole with Kristi, Mirka's food
-line beside the rectory, David grilling out back, Terry at the info tent, the
-back parking lot connecting both driveways, and the Biergarten — where Mike
-and Norm hold down the tables and the Pittsburgh PolkaMeisters play facing
-the crowd. Requesting a song really changes the music.
+Kid's Center + booths (Caitlyn at crafts, Debra at the PLDM table, and Lily,
+Danielle and Hallie running the place) are entered from the side through it —
+the PALM and LSF ministry tents (with Brandon and Pastor Andrae), the axe
+throw with Alex, cornhole with Kristi, Mirka's food line beside the rectory,
+David grilling out back, Terry at the info tent, the back parking lot
+connecting both driveways, and the Biergarten — where Mike, Cindy and Norm
+hold down the tables and the Pittsburgh PolkaMeisters play facing the crowd.
+Requesting a song really changes the music.
 
 ## Play
 
@@ -26,6 +27,7 @@ embedded in a website.
 | Action        | Keyboard              | Touch          |
 |---------------|-----------------------|----------------|
 | Move          | WASD / Arrow keys     | D-pad          |
+| Sprint        | Hold Shift            | —              |
 | Interact      | E / Space / Enter     | A button       |
 | Quest list    | Tab / C               | ☰ QUESTS       |
 | Music on/off  | M                     | ♪ button       |
@@ -100,4 +102,9 @@ touch controls on phones/tablets.
 - People are drawn by `drawPerson()` at 12px with a two-frame walk: feet apart
   on one frame, together with the body lifted a pixel on the other. The stride
   has to live in the two rows below the body block, which paints over
-  everything above `y+12`.
+  everything above `y+12`. Kids (`kid:true`) use `drawKid()` — the same build
+  four rows shorter with a full-size head, which is what reads as "child" at
+  this scale; `small:true` takes another row off for the three-year-olds.
+- The bitmap font is ASCII plus `Ë`, whose E is squashed to six rows to fit the
+  diaeresis. `drawText` silently skips glyphs it doesn't have, so a new
+  character's name needs a glyph before it will render.

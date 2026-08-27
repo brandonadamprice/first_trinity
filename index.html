@@ -126,6 +126,7 @@ const FONT = {
 'X':["10001","10001","01010","00100","01010","10001","10001"],
 'Y':["10001","10001","01010","00100","00100","00100","00100"],
 'Z':["11111","00001","00010","00100","01000","10000","11111"],
+'Ë':["01010","11111","10000","11110","10000","10000","11111"],
 '0':["01110","10001","10011","10101","11001","10001","01110"],
 '1':["00100","01100","00100","00100","00100","00100","01110"],
 '2':["01110","10001","00001","00110","01000","10000","11111"],
@@ -199,9 +200,14 @@ window.addEventListener('keydown', e=>{
   keys[e.key] = true;
   startAudioOnGesture();
 });
-window.addEventListener('keyup', e=>{ keys[e.key] = false; });
+window.addEventListener('keyup', e=>{
+  keys[e.key] = false;
+  // shift+W reports 'W' on keydown and can report 'w' on keyup (or the reverse),
+  // which would leave the other case stuck on and the player walking forever
+  if (e.key.length === 1){ keys[e.key.toLowerCase()] = false; keys[e.key.toUpperCase()] = false; }
+});
 
-const padState = {u:false,d:false,l:false,r:false};
+const padState = {u:false,d:false,l:false,r:false,run:false};
 if (isTouch){
   const pad = document.getElementById('pad');
   pad.style.display='block';
@@ -642,6 +648,7 @@ function counterObj(tx,ty,tw,topcol){
 
 /* ============================================================ CHARACTERS */
 function drawPerson(g, px, py, dir, frame, cfg){
+  if (cfg.kid) return drawKid(g, px, py, dir, frame, cfg);
   const x = Math.round(px), y = Math.round(py);
   g.fillStyle='rgba(0,0,0,0.18)'; g.fillRect(x+2,y+14,8,2);          // shadow
   const skin = cfg.skin||'#f0c090', hair = cfg.hair||'#6b4a2b';
@@ -699,6 +706,39 @@ function drawPerson(g, px, py, dir, frame, cfg){
     g.fillStyle=hair; g.fillRect(x+2,y+2,1,4); g.fillRect(x+9,y+2,1,4);
     g.fillStyle='#d94f4f'; g.fillRect(x+2,y+6,1,1); g.fillRect(x+9,y+6,1,1);
   }
+  g.restore();
+}
+/* Same build as drawPerson but four rows shorter with a full-size head, which
+   is what reads as "child" at this scale. Same two-frame walk. */
+function drawKid(g, px, py, dir, frame, cfg){
+  const x = Math.round(px), y = Math.round(py);
+  g.fillStyle='rgba(0,0,0,0.18)'; g.fillRect(x+3,y+13,6,2);
+  const skin = cfg.skin||'#f0c090', hair = cfg.hair||'#6b4a2b';
+  const legs = cfg.legs||'#7a4f2a', shoe = '#3a2a1a';
+  const apart = (frame===1), pass = (frame===2), bob = pass ? -1 : 0;
+  const t = cfg.small ? 1 : 0;                                 // the three-year-olds
+  const lx = apart ? x+3 : x+4, rx = apart ? x+8 : x+7;
+  const legTop = y+11+t+bob, legH = 2-t-bob;                   // knees down to the shoes
+  g.fillStyle=legs; g.fillRect(lx,legTop,1,legH); g.fillRect(rx,legTop,1,legH);
+  g.fillStyle=shoe; g.fillRect(lx,y+13,1,1); g.fillRect(rx,y+13,1,1);
+  g.save(); if (bob) g.translate(0,bob);
+  if (cfg.dress){ g.fillStyle=cfg.dress; g.fillRect(x+4,y+8+t,4,2); g.fillRect(x+3,y+10+t,6,1); }
+  else { g.fillStyle=cfg.shirt||'#f5f0e6'; g.fillRect(x+4,y+8+t,4,2);
+         g.fillStyle=cfg.pants||legs; g.fillRect(x+4,y+10+t,4,1); }
+  g.fillStyle=skin;                                            // arms
+  if (dir==='left') g.fillRect(x+3,y+8+t,1,2);
+  else if (dir==='right') g.fillRect(x+8,y+8+t,1,2);
+  else { g.fillRect(x+3,y+8+t,1,2); g.fillRect(x+8,y+8+t,1,2); }
+  g.fillStyle=skin; g.fillRect(x+3,y+3+t,6,5);                 // head, full size on purpose
+  g.fillStyle=hair;
+  if (dir==='up') g.fillRect(x+3,y+3+t,6,4);
+  else { g.fillRect(x+3,y+3+t,6,2); g.fillRect(x+3,y+5+t,1,2); g.fillRect(x+8,y+5+t,1,2); }
+  if (cfg.pigtails){ g.fillStyle=hair; g.fillRect(x+2,y+4+t,1,4); g.fillRect(x+9,y+4+t,1,4);
+    // hair tie at the TOP of the pigtail - down by the chin it reads as a cheek
+    if (cfg.bow){ g.fillStyle=cfg.bow; g.fillRect(x+2,y+3+t,1,1); g.fillRect(x+9,y+3+t,1,1); } }
+  if (dir==='down'){ g.fillStyle='#241d16'; g.fillRect(x+4,y+5+t,1,1); g.fillRect(x+7,y+5+t,1,1); }
+  else if (dir==='left'){ g.fillStyle='#241d16'; g.fillRect(x+4,y+5+t,1,1); }
+  else if (dir==='right'){ g.fillStyle='#241d16'; g.fillRect(x+7,y+5+t,1,1); }
   g.restore();
 }
 function drawDog(g, px, py, flip, frame){
@@ -975,8 +1015,8 @@ function buildWorld(){
     });
     addSolid(x,y+2,40,10);
   }
-  interactable(38,8.5,1.5,'CRAFT BOOTH',()=>chatter('CAITLYN',["HI, I'M CAITLYN! WELCOME TO CRAFTS!","GLITTER. GOOGLY EYES. POPSICLE STICKS. THE HOLY TRINITY OF CRAFTS.","EVERY YEAR SOMEONE GLUES A GOOGLY EYE TO THE PASTOR. EVERY YEAR HE PRETENDS NOT TO NOTICE."]));
-  interactable(42,8.5,1.5,'PLDM TABLE',()=>chatter('DEBRA',["HI! I'M DEBRA, WITH PITTSBURGH LUTHERAN DEAF MINISTRIES.","WANT TO LEARN THE SIGN FOR 'PRETZEL'? ...THERE YOU GO. YOUR DAY JUST IMPROVED.","DEAF AND HEARING FOLKS AT THE SAME TABLE, EATING THE SAME PRETZELS. THAT'S THE WHOLE IDEA."]));
+  interactable(38,8.5,1.5,'CRAFT BOOTH',()=>chatter('CAITLYN',["WELCOME TO CRAFTS! EVERYTHING ON THIS TABLE IS WASHABLE. MOSTLY.","GLITTER. GOOGLY EYES. POPSICLE STICKS. THE HOLY TRINITY OF CRAFTS.","EVERY YEAR SOMEONE GLUES A GOOGLY EYE TO THE PASTOR. EVERY YEAR HE PRETENDS NOT TO NOTICE."]));
+  interactable(42,8.5,1.5,'PLDM TABLE',()=>chatter('DEBRA',["THIS IS THE PLDM TABLE - PITTSBURGH LUTHERAN DEAF MINISTRIES.","WANT TO LEARN THE SIGN FOR 'PRETZEL'? ...THERE YOU GO. YOUR DAY JUST IMPROVED.","DEAF AND HEARING FOLKS AT THE SAME TABLE, EATING THE SAME PRETZELS. THAT'S THE WHOLE IDEA."]));
   interactable(46,8.5,1.5,'GAMES BOOTH',()=>chatter('RING TOSS',["THE RINGS ARE PRETZEL-SHAPED.","NOBODY HAS EVER WON. IT'S PERFECT.","THE GRAND PRIZE IS A PRETZEL. SO IS THE CONSOLATION PRIZE."]));
   // balloon stand
   (function(){ const x=48*TS, y=10*TS;
@@ -1186,7 +1226,7 @@ function buildWorld(){
   })();
   interactable(55.4,38.5,2.2,'STAGE',()=>{
     if (!met.band){ met.band = true;   // greeting is once-per-visit, not once-per-quest:
-      say('POLKAMEISTERS', ["WE ARE THE PITTSBURGH POLKAMEISTERS!","WE KNOW 400 POLKAS AND ONE (1) JOURNEY SONG.","GOT A REQUEST?"], ()=>{ startSong(); });
+      say('POLKAMEISTERS', ["WELCOME TO THE STAGE! FOUR HORNS AND ONE VERY COMMITTED ACCORDION.","WE KNOW 400 POLKAS AND ONE (1) JOURNEY SONG.","GOT A REQUEST?"], ()=>{ startSong(); });
     } else {
       chatter('POLKAMEISTERS', [
         "BACK FOR MORE? WHAT'LL IT BE?",
@@ -1418,7 +1458,7 @@ function buildWorld(){
   })();
   interactable(6.6,33.2,1.9,'CORNHOLE',()=>{
     if (!met.kristi){ met.kristi = true;
-      say('KRISTI', ["CORNHOLE! I'M KRISTI. REIGNING CHAMPION.","THE OFFICIAL SPORT OF WAITING FOR BRATS.","SET YOUR POWER, THEN YOUR AIM. SINK ONE AND I'LL BE IMPRESSED."], ()=>{ startCorn(); });
+      say('KRISTI', ["CORNHOLE! AND YES, YOU ARE LOOKING AT THE REIGNING CHAMPION.","THE OFFICIAL SPORT OF WAITING FOR BRATS.","SET YOUR POWER, THEN YOUR AIM. SINK ONE AND I'LL BE IMPRESSED."], ()=>{ startCorn(); });
     } else chatter('KRISTI', [
       "AGAIN? GOOD. SET YOUR POWER.",
       "I AM STILL THE REIGNING CHAMPION. JUST SO WE ARE CLEAR.",
@@ -1480,7 +1520,7 @@ function buildWorld(){
   npc(52.5,32.4,{name:'OTTO', hat:'feather', shirt:'#f5f0e6', pants:'#7a4f2a', straps:true, still:true});
   npc(52.3,18,{name:'DAVID', shirt:'#f5f0e6', pants:'#3a3a44', hat:'cap', hatColor:'#b03a3a', still:true,
     apron:true});
-  npc(19,39.5,{name:'ALEX', shirt:'#b03a3a', pants:'#3a3a44', hair:'#c9542f', wander:8,
+  npc(19,39.5,{name:'ALEX', shirt:'#b03a3a', pants:'#3a3a44', hair:'#e0c070', wander:8,
     says:[["RULE ONE: THROW THE AXE AT THE TARGET.","RULE TWO: ONLY AT THE TARGET.","THERE ARE NO OTHER RULES."],
       "I'VE BEEN RUNNING THIS SINCE THE 2019 FEST. ZERO INCIDENTS. ASK ANYONE.",
       "PEOPLE ASK IF IT'S SAFE. THEN THEY GET IN LINE ANYWAY."]});
@@ -1490,21 +1530,42 @@ function buildWorld(){
   npc(49.5,11,{name:'DOODLES', hat:'puff', shirt:'#c17ad4', pants:'#e8d24a', nose:'#d94f4f', still:true});
   npc(6.8,39.4,{name:'TERRY', shirt:'#2b7a78', pants:'#3a3a44', hair:'#6b4a2b', hat:'cap', hatColor:'#2b7a78', still:true});
   npc(49.5,34.3,{name:'MIKE', shirt:'#3b6ea8', pants:'#3a3a44', hair:'#6b4a2b', wander:10,
-    says:["MIKE. LIFELONG MEMBER. FIRST IN LINE FOR BRATS EVERY YEAR.","I PACE MYSELF ON THE BRATS. THE PACE IS FOUR.","I SURE HOPE THEY GOT LIABILITY INSURANCE FOR THIS!"]});
+    says:["LIFELONG MEMBER. FIRST IN LINE FOR BRATS EVERY YEAR.","I PACE MYSELF ON THE BRATS. THE PACE IS FOUR.","I SURE HOPE THEY GOT LIABILITY INSURANCE FOR THIS!"]});
   npc(54.5,34.5,{name:'NORM', shirt:'#57b060', pants:'#241d16', hair:'#9a9a9a', wander:10,
-    says:["NORM. I CAME FOR THE POLKA.","I STAYED BECAUSE I SAT DOWN. THESE CHAIRS ARE BETTER THAN THEY LOOK.","SOMEONE BROUGHT ME A PRETZEL WITHOUT ME EVEN ASKING. BEST CHURCH IN PITTSBURGH."]});
+    says:["I CAME FOR THE POLKA.","I STAYED BECAUSE I SAT DOWN. THESE CHAIRS ARE BETTER THAN THEY LOOK.","SOMEONE BROUGHT ME A PRETZEL WITHOUT ME EVEN ASKING. BEST CHURCH IN PITTSBURGH."]});
   npc(35.2,29,{name:'BRANDON', shirt:'#f5f0e6', pants:'#7a4f2a', hair:'#3a2a1a', wander:10,
-    says:["BRANDON. PALM - PITTSBURGH AREA LUTHERAN MINISTRIES. CLIPBOARD GUY.","SIGN UP FOR SOMETHING. ANYTHING. THAT'S HOW THEY GET YOU. I SIGNED UP IN 2009.","IS IT JUST ME, OR DOES EVERYTHING LOOK A LITTLE... PIXELATED TODAY?"]});
+    says:["PALM - PITTSBURGH AREA LUTHERAN MINISTRIES. I'M THE TREASURER, WHICH IS WHY I HAVE THE CLIPBOARD.","SIGN UP FOR SOMETHING. ANYTHING. THAT'S HOW THEY GET YOU. I SIGNED UP IN 2009.","IS IT JUST ME, OR DOES EVERYTHING LOOK A LITTLE... PIXELATED TODAY?"]});
   npc(35.2,33.4,{name:'PASTOR ANDRAE', hat:'collar', shirt:'#2b2b33', pants:'#1e1e26', hair:'#241d16', wander:10,
-    says:["PASTOR ANDRAE. I'M HERE WITH LSF - LUTHERAN STUDENT FELLOWSHIP.","COLLEGE STUDENTS RUN ON FREE FOOD AND GENUINE COMMUNITY. IN THAT ORDER.","PITT AND CMU ARE BOTH WALKING DISTANCE. SO IS THE FREE FOOD. YOU DO THE MATH."]});
-  npc(46,40.5,{name:'CHUCK', shirt:'#241d16', pants:'#d9b23a', hat:'cap', hatColor:'#241d16', wander:30,
-    says:[["THIS IS BETTER THAN A STILLERS GAME.","DON'T TELL ANYONE I SAID DAT, YINZ."],
-      "I PUT KRAUT ON MY PRETZEL. I CONTAIN MULTITUDES.",
-      "I PARKED IN THE BACK LOT. TOOK ME THREE YEARS TO FIND IT. WORTH IT."]});
-  npc(40,13,{name:'PIPER', shirt:'#e8d24a', pants:'#4f7ed9', hair:'#3a2a1a', wander:40, fast:true,
-    says:["I ATE FOUR PRETZELS AND I FEEL INVINCIBLE.","THE BALLOON GUY MADE ME A DOG! HIS NAME IS MR. SQUEAKS.","THE PLDM TABLE TAUGHT ME TO SIGN 'MORE PRETZELS PLEASE.' IT WORKS EVERY TIME."]});
-  npc(52,36.5,{name:'GRETA', dress:'#b23a48', hat:'braid', hair:'#6b4a2b', wander:16,
-    says:["MY GRANDMOTHER'S DIRNDL. MY GRANDFATHER'S APPETITE.","THE POLKA IS IN 2/4 BUT MY HEART IS IN 6/8.","MY GRANDMOTHER WOULD HAVE HATED THE AXE THROWING. I LOVE THE AXE THROWING."]});
+    says:["I'M HERE WITH LSF - LUTHERAN STUDENT FELLOWSHIP.",
+      "COLLEGE STUDENTS RUN ON FREE FOOD AND GENUINE COMMUNITY. IN THAT ORDER.",
+      "ASK ME ABOUT SWEDEN. GO ON, ASK ME. I HAVE SLIDES.",
+      "BO GIERTZ WROTE 'THE HAMMER OF GOD.' READ IT, THEN COME BACK AND WE'LL TALK."]});
+  npc(46,40.5,{name:'BOB', shirt:'#4a6a8a', pants:'#3a3a44', hair:'#8a8a8a', hat:'cap', hatColor:'#4a6a8a', wander:30,
+    says:["TRUSTEE. WHICH MEANS I LOOK AT THE BUILDING WHILE EVERYONE ELSE LOOKS AT THE BAND.",
+      "LOOK AT THIS GRASS. WE AERATED IN APRIL AND IT CAME BACK BEAUTIFUL.",
+      "THE NORTH GUTTERS NEED DOING BEFORE WINTER. I HAVE MENTIONED THIS. TWICE."]});
+  npc(40,13,{name:'ZO\u00cb', shirt:'#e8d24a', pants:'#4f7ed9', hair:'#3a2a1a', wander:40, fast:true,
+    says:["THIS PRETZEL IS PRETTY TWISTED. TAKES ONE TO KNOT ONE.",
+      "I ASKED THE BAND FOR SOMETHING UPBEAT. THEY SAID THEY'D POLKA AROUND AND FIND OUT.",
+      "THE BRATWURST HERE IS THE WURST. I MEAN THAT AS A COMPLIMENT.",
+      "I'D MAKE A JOKE ABOUT THE ORGAN LOFT, BUT IT WOULD GO OVER YOUR HEAD."]});
+  npc(52,36.5,{name:'CINDY', dress:'#b23a48', hair:'#6b4a2b', wander:16,
+    says:["I'M HERE WITH MIKE. THE ONE PACING HIMSELF ON THE BRATS.",
+      "I BOWL TUESDAY NIGHTS. ROLLED A 212 LAST WEEK. NOBODY HERE IS IMPRESSED.",
+      "LOVELY FESTIVAL. WOULD BE LOVELIER WITH A LITTLE WHISKEY. I'M JUST SAYING."]});
+  /* the kid's center regulars, running the place with authority nobody granted */
+  npc(38.6,11.6,{name:'LILY', kid:true, dress:'#e0912f', hair:'#d9b23a', pigtails:true, bow:'#d94f4f', wander:14, fast:true,
+    says:["I'M FIVE. THAT'S THE BIGGEST NUMBER AT THIS TABLE.",
+      "MY DADDY COUNTS ALL THE MONEY AND MY MOMMY WINS AT CORNHOLE.",
+      "I MADE A CROWN AT THE CRAFT TABLE. I'M IN CHARGE NOW."]});
+  npc(41.6,12.2,{name:'DANIELLE', kid:true, small:true, dress:'#8a4f9e', hair:'#3a2a1a', pigtails:true, bow:'#e8d24a', wander:10,
+    says:["I'M THREE. LILY IS FIVE. THAT IS NOT FAIR.",
+      "I HAVE GLITTER ON ME AND NOBODY KNOWS HOW.",
+      "*HOLDS UP A PRETZEL* THIS IS MINE NOW."]});
+  npc(44.4,11.8,{name:'HALLIE', kid:true, small:true, dress:'#2f7d46', hair:'#6b4a2b', pigtails:true, bow:'#4f7ed9', wander:10,
+    says:["MY DADDY MAKES THE HOT DOGS. THEY'RE CALLED BRATS.",
+      "MOMMY SAID ONE MORE GOOGLY EYE. I USED ELEVEN.",
+      "I'M THREE AND DANIELLE IS THREE. WE DECIDED THAT MAKES US TWINS."]});
   npc(32.95,22.9,{name:'OFFICER DAN', shirt:'#2b2b33', pants:'#241d16', hat:'cap', hatColor:'#241d16', still:true,
     says:["EVERYTHING IS UNDER CONTROL.","THE ONLY CRIME HERE IS HOW GOOD THE BRATS ARE.","YES, I'VE HAD FOUR PRETZELS. IT'S CALLED COMMUNITY POLICING."]});
 
@@ -1613,12 +1674,13 @@ function update(dt){
   const [dx,dy] = dirInput();
   let moving = (dx!==0||dy!==0);
   if (moving){
-    const sp = player.speed * (dx!==0&&dy!==0 ? 0.72 : 1);
+    const sprinting = !!(keys['Shift'] || padState.run);
+    const sp = player.speed * (sprinting?1.7:1) * (dx!==0&&dy!==0 ? 0.72 : 1);
     const nx = player.x + dx*sp, ny = player.y + dy*sp;
     if (!collides(nx, player.y)) player.x = nx;
     if (!collides(player.x, ny)) player.y = ny;
     player.dir = dy<0?'up':(dy>0?'down':(dx<0?'left':'right'));
-    player.animT += dt*6;
+    player.animT += dt*(sprinting?9:6);
     player.frame = 1 + (((player.animT)|0)%2);
   } else { player.frame = 0; player.animT = 0; }
 
