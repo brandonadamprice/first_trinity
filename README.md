@@ -109,6 +109,14 @@ touch controls on phones/tablets.
   everything above `y+12`. Kids (`kid:true`) use `drawKid()` — the same build
   four rows shorter with a full-size head, which is what reads as "child" at
   this scale; `small:true` takes another row off for the three-year-olds.
+- Collision is a small box at the feet (`x+2..x+9`, `y+9..y+15`), so people can
+  stand slightly in front of scenery and walk behind it. The map edge is the
+  exception: it stops the whole drawn sprite (`SPR_L/R/T/B`, the box
+  `drawPerson` paints into — hat feather and walk bob included), because the
+  camera can't pan past the map, so anything hanging over the edge is simply
+  never drawn. Tile lookups floor rather than truncate: `|0` rounds -1..-15
+  *up* to tile 0, so a step off the top or left edge read as walkable grass
+  and you could stroll off the map and out of sight.
 - The wooden QR sign opens a real, scannable QR code for
   <https://www.firsttrinity.net/oktoberfest>. The 29×29 module matrix (version
   3-M) is generated once and baked in as data rather than encoded at runtime,

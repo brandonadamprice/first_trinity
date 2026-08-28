@@ -1744,11 +1744,24 @@ const player = {
 };
 let cam = {x:0,y:0};
 
+/* Drawn extent of a person, relative to their x,y - the half-open box
+   drawPerson paints into. Left edge is the cowboy brim at x+1, right is the
+   hat feather at x+10, top is a hat at y-2 lifted another row by the walk
+   bob, bottom is the shadow at y+15. */
+const SPR_L=1, SPR_R=11, SPR_T=-3, SPR_B=16;
+
 function collides(px,py){
-  // player collision box: x+2..x+10, y+9..y+15
+  /* The map edge stops the whole sprite, not just the feet: the camera can't
+     pan past the map, so any part hanging over the edge is simply never drawn
+     - stopping at the feet box would leave you standing with your head cut
+     off by the top of the screen. */
+  if (px+SPR_L<0 || px+SPR_R>MW*TS || py+SPR_T<0 || py+SPR_B>MH*TS) return true;
+  // player collision box: x+2..x+9, y+9..y+15
   const x1=px+2, y1=py+9, x2=px+9, y2=py+15;
   for (const [cx,cy] of [[x1,y1],[x2,y1],[x1,y2],[x2,y2]]){
-    const tx=(cx/TS)|0, ty=(cy/TS)|0;
+    /* floor, not |0: truncation rounds -1..-15 *up* to tile 0, so a step off
+       the top or left edge read as walkable grass instead of out of bounds. */
+    const tx=Math.floor(cx/TS), ty=Math.floor(cy/TS);
     if (tx<0||ty<0||tx>=MW||ty>=MH) return true;
     if (solid[ty][tx]) return true;
   }
