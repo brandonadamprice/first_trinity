@@ -80,6 +80,17 @@ touch controls on phones/tablets.
 - Music is a little 2/4 chiptune oompah generated with the Web Audio API
   (on by default after your first input; toggle with M or the ♪ button —
   four tunes total, three of them requestable from the band).
+  Browsers won't let a page make noise until you've interacted with it, and
+  some hand back a *suspended* `AudioContext` even when it's built inside the
+  gesture handler — a suspended context isn't merely quiet, its clock is
+  frozen, so the note scheduler has nothing to schedule against. Every gesture
+  therefore calls `resume()`, not just the first, and the ♪ button starts the
+  music on its first press rather than toggling a switch that was never
+  actually on. Phones need one thing more: a browser commonly only lets sound
+  start from the *end* of a touch, and the d-pad and A button ask on
+  `touchstart`, so a capture-phase `touchend`/`pointerup`/`click` listener on
+  the window asks again for every control — the ♪ button excepted, since
+  starting the music there would let its own tap turn it straight back off.
 - Text is rendered with a built-in 5×7 pixel bitmap font.
 - Dialogue is authored as **phrases** — one phrase is one complete thought,
   written out in full rather than hand-broken into display lines. At talk time
