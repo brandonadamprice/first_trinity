@@ -371,7 +371,19 @@ function toggleMusic(){
   startMusic();
 }
 /* jolly original oompah tunes in G — 2/4 time.
-   chords: 0=G 1=D 2=C 3=Em; melody: [freq, eighth-note length], 0 = rest */
+   chords: 0=G 1=D 2=C 3=Em; melody: [freq, eighth-note length], 0 = rest.
+
+   A bar is 4 eighths, and `harm` steps one chord per bar while `mel` runs on
+   its own clock, so a tune's note lengths MUST add up to harm.length*4 or the
+   melody drifts out of phase with the chords a little further on every loop.
+
+   The three requestable tunes each have to sound like the thing the band was
+   asked for. What they can't do is quote it: Beer Barrel Polka (Vejvoda,
+   1927), the Chicken Dance (Werner Thomas, d. 2016) and Don't Stop Believin'
+   (1981) are all still in copyright, and this file gets served from a church
+   website. So each one is written to carry what actually makes the original
+   recognizable and isn't anyone's property - a genre, a structure, a chord
+   loop - rather than its melody. */
 const CHORDS = [
   [196.0, 246.9, 293.7],   // G
   [220.0, 293.7, 369.99],  // D
@@ -391,51 +403,73 @@ const SONGBOOK = {
     [N.A4,2],[N.B4,1],[N.A4,1],[N.G4,2],[N.E4,2],
     [N.D4,2],[N.F4s,2],[N.G4,4],
   ]},
-  barrel: { tempo:1.2, harm:[0,0,2,1, 0,0,1,0, 0,2,0,0, 2,1,0,0], mel:[
-    [N.G4,1],[N.A4,1],[N.B4,1],[N.C5,1],
-    [N.D5,1],[N.B4,1],[N.G4,2],
-    [N.E5,1],[N.D5,1],[N.C5,1],[N.B4,1],
-    [N.A4,2],[N.D4,2],
-    [N.G4,1],[N.A4,1],[N.B4,1],[N.C5,1],
-    [N.D5,1],[N.B4,1],[N.G4,2],
-    [N.C5,1],[N.B4,1],[N.A4,1],[N.F4s,1],
-    [N.G4,4],
-    [N.B4,1],[N.C5,1],[N.D5,2],
-    [N.E5,1],[N.D5,1],[N.C5,2],
-    [N.D5,1],[N.E5,1],[N.F5s,1],[N.G5,1],
-    [N.D5,2],[N.B4,2],
-    [N.C5,1],[N.C5,1],[N.E5,2],
-    [N.A4,1],[N.A4,1],[N.D5,2],
-    [N.B4,1],[N.G4,1],[N.A4,1],[N.F4s,1],
-    [N.G4,4],
-  ]},
-  chicken: { tempo:1.12, harm:[0,1,0,1, 0,1,0,0], mel:[
-    [N.B4,1],[N.B4,1],[N.B4,1],[N.B4,1],
-    [N.A4,1],[N.A4,1],[N.A4,1],[N.A4,1],
-    [N.G4,1],[N.G4,1],[N.G4,1],[0,1],
-    [N.D5,1],[N.D5,1],[0,2],
-    [N.B4,1],[N.B4,1],[N.B4,1],[N.B4,1],
-    [N.A4,1],[N.A4,1],[N.A4,1],[N.A4,1],
+  /* ROLL OUT THE BARREL - a Bohemian beer-hall polka, where the genre is the
+     whole identity: brisk two-step, arpeggio up to a top note and back, a D7
+     leaning on its seventh, then a repeated-note trio you can shout along to
+     with a stein in your hand. */
+  barrel: { tempo:1.25, harm:[0,0,1,1, 0,0,1,0, 2,2,0,0, 1,1,0,0], mel:[
     [N.G4,1],[N.B4,1],[N.D5,1],[N.B4,1],
-    [N.G4,2],[0,2],
-  ]},
-  journey: { tempo:0.85, harm:[0,3,1,2, 0,0,2,1, 0,1,2,2, 3,0,1,0], mel:[
-    [N.D4,2],[N.G4,2],
-    [N.B4,4],
-    [N.A4,2],[N.G4,2],
-    [N.E4,4],
-    [N.D4,2],[N.G4,2],
-    [N.B4,2],[N.D5,2],
-    [N.C5,2],[N.B4,2],
-    [N.A4,4],
-    [N.G4,2],[N.B4,2],
-    [N.D5,4],
-    [N.E5,2],[N.D5,2],
-    [N.C5,4],
-    [N.B4,2],[N.C5,2],
-    [N.D5,2],[N.B4,2],
-    [N.A4,2],[N.F4s,2],
+    [N.G5,2],[N.D5,2],
+    [N.A4,1],[N.C5,1],[N.F4s,1],[N.A4,1],
+    [N.D5,2],[N.A4,2],
+    [N.G4,1],[N.B4,1],[N.D5,1],[N.B4,1],
+    [N.G5,2],[N.D5,2],
+    [N.E5,1],[N.D5,1],[N.C5,1],[N.A4,1],
     [N.G4,4],
+    [N.E5,1],[N.E5,1],[N.E5,1],[N.C5,1],
+    [N.G5,2],[N.E5,2],
+    [N.D5,1],[N.D5,1],[N.D5,1],[N.B4,1],
+    [N.B4,2],[N.D5,2],
+    [N.C5,1],[N.C5,1],[N.A4,1],[N.C5,1],
+    [N.F4s,2],[N.A4,2],
+    [N.B4,1],[N.A4,1],[N.G4,1],[N.A4,1],
+    [N.G4,4],
+  ]},
+  /* THE CHICKEN DANCE - the dance is the tune. Four beak snaps, four wing
+     flaps, four tail wiggles, then a bar of nothing but oom-pah to clap into,
+     twice and climbing; then the flowing bit where everyone links arms. Fastest
+     thing in the book, because it is. */
+  chicken: { tempo:1.3, harm:[0,0,1,1, 2,2,1,0, 0,0,1,0, 2,2,1,0], mel:[
+    [N.D5,1],[N.D5,1],[N.D5,1],[N.D5,1],          // snap snap snap snap
+    [N.B4,1],[N.B4,1],[N.B4,1],[N.B4,1],          // flap flap flap flap
+    [N.A4,1],[N.A4,1],[N.A4,1],[N.A4,1],          // wiggle wiggle wiggle wiggle
+    [0,4],                                        // clap clap clap clap
+    [N.E5,1],[N.E5,1],[N.E5,1],[N.E5,1],
+    [N.C5,1],[N.C5,1],[N.C5,1],[N.C5,1],
+    [N.F5s,1],[N.F5s,1],[N.F5s,1],[N.F5s,1],
+    [0,4],
+    [N.G4,1],[N.A4,1],[N.B4,1],[N.C5,1],          // and now everyone links arms
+    [N.D5,2],[N.B4,2],
+    [N.C5,1],[N.B4,1],[N.A4,1],[N.F4s,1],
+    [N.G4,2],[N.B4,2],
+    [N.E5,1],[N.D5,1],[N.C5,1],[N.E5,1],
+    [N.C5,2],[N.E5,2],
+    [N.D5,1],[N.C5,1],[N.B4,1],[N.A4,1],
+    [N.G4,4],
+  ]},
+  /* DON'T STOP POLKA-LIEVIN' - a stadium ballad with a tuba under it. The
+     recognizable part of one of those is the four-chord loop, not the tune, so
+     the harmony is G-D-Em-C round and round while the melody climbs a little
+     higher each time. It ends on the fifth over the C rather than resolving,
+     so the loop just keeps going - which is the whole point of the song it is
+     pretending to be. */
+  journey: { tempo:1, harm:[0,1,3,2, 0,1,3,2, 0,1,3,2, 0,1,3,2], mel:[
+    [N.D4,2],[N.G4,2],
+    [N.F4s,2],[N.A4,2],
+    [N.G4,2],[N.B4,2],
+    [N.C5,4],
+    [N.B4,2],[N.D5,2],
+    [N.A4,2],[N.F4s,2],
+    [N.G4,2],[N.E5,2],
+    [N.E5,2],[N.C5,2],
+    [N.D5,4],
+    [N.F5s,4],
+    [N.G5,2],[N.E5,2],
+    [N.E5,2],[N.G5,2],
+    [N.G5,2],[N.D5,2],
+    [N.F5s,2],[N.A4,2],
+    [N.E5,2],[N.B4,2],
+    [N.C5,2],[N.D5,2],
   ]},
 };
 let curSong = SONGBOOK.oompah;

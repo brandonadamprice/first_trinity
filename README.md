@@ -79,7 +79,8 @@ touch controls on phones/tablets.
 - All sprites, tiles, and the church facade title screen are drawn procedurally.
 - Music is a little 2/4 chiptune oompah generated with the Web Audio API
   (on by default after your first input; toggle with M or the ♪ button —
-  four tunes total, three of them requestable from the band).
+  four tunes total, three of them requestable from the band, and each request
+  sounds like what was asked for).
   Browsers won't let a page make noise until you've interacted with it, and
   some hand back a *suspended* `AudioContext` even when it's built inside the
   gesture handler — a suspended context isn't merely quiet, its clock is
@@ -91,6 +92,17 @@ touch controls on phones/tablets.
   `touchstart`, so a capture-phase `touchend`/`pointerup`/`click` listener on
   the window asks again for every control — the ♪ button excepted, since
   starting the music there would let its own tap turn it straight back off.
+- A tune is `harm`, one chord per bar, plus `mel` as `[frequency, length in
+  eighths]`. The two run on separate clocks, so **a tune's note lengths have to
+  add up to `harm.length * 4`** or the melody drifts against the chords a
+  little further on every loop. The three requestable songs have to sound like
+  what the band was asked for without quoting it — *Beer Barrel Polka* (1927),
+  the *Chicken Dance* (Werner Thomas, d. 2016) and *Don't Stop Believin'*
+  (1981) are all still in copyright, and this file gets served from a church
+  website. So each carries the part that makes the original recognizable and
+  belongs to nobody: a genre for the barrel polka, the four-chirps-then-clap
+  structure for the chicken dance, and the I-V-vi-IV loop for the ballad, whose
+  melody deliberately never resolves so the loop just keeps going.
 - Text is rendered with a built-in 5×7 pixel bitmap font.
 - Dialogue is authored as **phrases** — one phrase is one complete thought,
   written out in full rather than hand-broken into display lines. At talk time
