@@ -280,7 +280,7 @@ if (isTouch){
   act.addEventListener('touchcancel',()=>act.classList.remove('on'));
 }
 document.getElementById('cardBtn').addEventListener('click', ()=>{ toggleCard(); startAudioOnGesture(); });
-document.getElementById('musicBtn').addEventListener('click', ()=>{ startAudioOnGesture(); toggleMusic(); });
+document.getElementById('musicBtn').addEventListener('click', toggleMusic);
 
 /* Clicking (or tapping) the QR opens the fest page. The canvas is displayed at
    whatever scale fits, so client coords have to be mapped back to the 480-wide
@@ -318,23 +318,41 @@ function dirInput(){
 /* ================================================================ AUDIO */
 let AC = null, masterGain = null, musicOn = true, musicStarted = false;
 let tempoMul = 1, sfxGain = null;
-function startAudioOnGesture(){
-  if (AC){
-    if (musicOn && !musicStarted){ musicStarted = true; nextNoteTime = AC.currentTime + 0.1; schedLoop(); }
-    return;
+/* Browsers hand back a *suspended* AudioContext unless a real user gesture is
+   behind it, and Safari suspends even one built inside the gesture handler -
+   it only starts on an explicit resume(). A suspended context isn't just
+   quiet: its clock is frozen, so the scheduler below has nothing to schedule
+   against and the fest plays in silence however long you wait. resume() is
+   therefore tried on every gesture, not just the first, since the one that
+   creates the context isn't always the one allowed to start it. */
+function audioReady(){
+  if (!AC){
+    try{
+      AC = new (window.AudioContext||window.webkitAudioContext)();
+      masterGain = AC.createGain(); masterGain.gain.value = 0.16; masterGain.connect(AC.destination);
+      sfxGain = AC.createGain(); sfxGain.gain.value = 0.5; sfxGain.connect(AC.destination);
+    }catch(e){ return false; }   /* no audio at all */
   }
-  try{
-    AC = new (window.AudioContext||window.webkitAudioContext)();
-    masterGain = AC.createGain(); masterGain.gain.value = 0.16; masterGain.connect(AC.destination);
-    sfxGain = AC.createGain(); sfxGain.gain.value = 0.5; sfxGain.connect(AC.destination);
-    if (musicOn && !musicStarted){ musicStarted = true; nextNoteTime = AC.currentTime + 0.1; schedLoop(); }
-  }catch(e){ /* no audio */ }
+  if (AC.state !== 'running' && AC.resume) AC.resume().catch(()=>{});
+  return true;
 }
+function startMusic(){
+  if (!AC || !musicOn || musicStarted) return;
+  musicStarted = true;
+  nextNoteTime = AC.currentTime + 0.1;
+  schedLoop();
+}
+function startAudioOnGesture(){ if (audioReady()) startMusic(); }
 function toggleMusic(){
-  startAudioOnGesture();
-  musicOn = !musicOn;
+  /* Before the first gesture nothing has ever played, so a button reading ON
+     is a promise rather than a state - pressing it then means "start", not
+     "stop". Pressing it once used to start the music and turn it straight back
+     off in the same click, which is why it took an off-and-on to get sound. */
+  const neverPlayed = !AC;
+  audioReady();
+  if (!(neverPlayed && musicOn)) musicOn = !musicOn;
   document.getElementById('musicBtn').innerHTML = musicOn ? '&#9834; ON' : '&#9834; OFF';
-  if (musicOn && !musicStarted && AC){ musicStarted = true; nextNoteTime = AC.currentTime + 0.1; schedLoop(); }
+  startMusic();
 }
 /* jolly original oompah tunes in G — 2/4 time.
    chords: 0=G 1=D 2=C 3=Em; melody: [freq, eighth-note length], 0 = rest */
@@ -411,10 +429,21 @@ function setSong(key){
   tempoMul = curSong.tempo;
   eighthIdx = 0; melIdx = 0; melHold = 0;
 }
+/* The pump. Kept separate from the scheduling so that a note the browser
+   refuses can't take the timer chain down with it - that would leave the music
+   dead until something restarted it. */
 function schedLoop(){
   if (!AC || !musicOn){ musicStarted = false; return; }
+  try{ schedNotes(); }catch(e){ /* a bad note must not silence the rest of the fest */ }
+  setTimeout(schedLoop, 30);
+}
+function schedNotes(){
   const spb = (60/108) / tempoMul;   // seconds per beat
   const e8 = spb/2;
+  /* A clock that stalled - a suspended context, a backgrounded tab throttling
+     the timer above - leaves nextNoteTime in the past. Catching up would dump
+     every missed note into one instant, so pick up from now instead. */
+  if (nextNoteTime < AC.currentTime) nextNoteTime = AC.currentTime + 0.05;
   while (nextNoteTime < AC.currentTime + 0.15){
     const inBar = eighthIdx % 4;          // 2/4 = 4 eighths per bar
     const bar = Math.floor(eighthIdx/4) % curSong.harm.length;
@@ -438,7 +467,6 @@ function schedLoop(){
     eighthIdx++;
     nextNoteTime += e8;
   }
-  setTimeout(schedLoop, 30);
 }
 function playTone(freq, t, dur, type, vol){
   if (!AC) return;
