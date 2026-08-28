@@ -282,6 +282,22 @@ if (isTouch){
 document.getElementById('cardBtn').addEventListener('click', ()=>{ toggleCard(); startAudioOnGesture(); });
 document.getElementById('musicBtn').addEventListener('click', toggleMusic);
 
+/* A net under all of it, which phones need. The controls above only ever ask
+   for audio on touchSTART - the A button's touchend doesn't ask, and the
+   d-pad's runs its no-fingers-left branch instead - but a phone browser
+   commonly only lets sound start from the END of a touch. On one of those the
+   game's own controls could never unlock the audio however much you played,
+   and the only thing that could was the music button. Capture phase, so it
+   still fires if a handler stops the event, and passive, so it never
+   interferes with the controls' own preventDefault. */
+for (const ev of ['touchend','pointerup','click'])
+  window.addEventListener(ev, e=>{
+    // ...except the music button, which has its own opinion about whether the
+    // music should be on. Starting it here would let its own tap turn it off.
+    if (e.target && e.target.closest && e.target.closest('#musicBtn')) return;
+    startAudioOnGesture();
+  }, {capture:true, passive:true});
+
 /* Clicking (or tapping) the QR opens the fest page. The canvas is displayed at
    whatever scale fits, so client coords have to be mapped back to the 480-wide
    internal space before hit-testing. */
